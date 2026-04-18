@@ -94,7 +94,7 @@ export const PreorderForm = () => {
     }
 
     setSubmitting(true);
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("preorders")
       .insert([
         {
@@ -104,15 +104,14 @@ export const PreorderForm = () => {
           phone: parsed.data.phone,
           tshirt_size: parsed.data.tshirt_size,
         },
-      ])
-      .select("id")
-      .single();
+      ]);
 
     if (error) {
+      console.error("Preorder insert error:", error);
       setSubmitting(false);
       toast({
         title: "Er ging iets mis",
-        description: "Probeer het opnieuw.",
+        description: error.message,
         variant: "destructive",
       });
       return;
@@ -121,7 +120,6 @@ export const PreorderForm = () => {
     supabase.functions
       .invoke("send-preorder-confirmation", {
         body: {
-          preorder_id: data.id,
           first_name: parsed.data.first_name,
           last_name: parsed.data.last_name,
           email: parsed.data.email,
