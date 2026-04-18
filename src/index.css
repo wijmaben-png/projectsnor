@@ -87,7 +87,69 @@
     font-feature-settings: "liga", "dlig";
   }
   .font-title {
-    font-family: "Ultra", "Playfair Display", Georgia, serif;
-    letter-spacing: -0.01em;
+    font-family: "Gondens", "Big Shoulders Display", "Playfair Display", Georgia, serif;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  /* Shine sweep on title — plays once on load */
+  .title-shine {
+    position: relative;
+    display: inline-block;
+    background: linear-gradient(
+      100deg,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--foreground)) 40%,
+      hsl(0 0% 55%) 50%,
+      hsl(var(--foreground)) 60%,
+      hsl(var(--foreground)) 100%
+    );
+    background-size: 250% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: title-shine-sweep 1.8s ease-out 0.3s 1 both;
+  }
+
+  @keyframes title-shine-sweep {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0% 0;
+    }
+  }
+
+  /* Pixel/stipple dissolve reveal for the portrait */
+  .pixel-reveal {
+    animation: pixel-reveal 1.6s steps(12, end) 0.2s 1 both;
+    will-change: filter, opacity, transform;
+  }
+
+  @keyframes pixel-reveal {
+    0% {
+      opacity: 0;
+      filter: blur(14px) contrast(1.4) brightness(1.1);
+      transform: scale(1.02);
+      -webkit-mask-image: radial-gradient(circle, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 1) 100%);
+              mask-image: radial-gradient(circle, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 1) 100%);
+    }
+    40% {
+      opacity: 0.6;
+      filter: blur(6px) contrast(1.2);
+    }
+    80% {
+      opacity: 0.95;
+      filter: blur(1px) contrast(1.05);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0) contrast(1);
+      transform: scale(1);
+    }
   }
 }

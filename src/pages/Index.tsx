@@ -5,8 +5,8 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-10">
       <header className="w-full max-w-xl flex justify-center">
-        <h1 className="font-title text-5xl md:text-7xl tracking-tight text-center leading-none">
-          Project Snor
+        <h1 className="font-title text-6xl md:text-8xl text-center">
+          <span className="title-shine">Project Snor</span>
         </h1>
       </header>
 
@@ -14,7 +14,7 @@ const Index = () => {
         <img
           src={portrait}
           alt="Project Snor portret"
-          className="w-64 md:w-80 h-auto"
+          className="w-64 md:w-80 h-auto pixel-reveal"
         />
 
         <h2 className="mt-10 font-display text-2xl md:text-3xl font-bold tracking-tight text-center">
