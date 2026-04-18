@@ -1,4 +1,5 @@
 import { PreorderForm } from "@/components/PreorderForm";
+import { PixelImage } from "@/components/PixelImage";
 import portrait from "@/assets/project-snor-portrait.png";
 
 const Index = () => {
@@ -11,14 +12,16 @@ const Index = () => {
       </header>
 
       <section className="w-full max-w-xl flex flex-col items-center mt-8">
-        {/* Reserve fixed aspect-ratio space so layout doesn't shift while image loads/animates */}
-        <div className="w-64 md:w-80 aspect-square relative overflow-hidden">
-          <img
+        {/* Reserve fixed aspect-ratio space so layout doesn't shift while image animates in */}
+        <div className="w-64 md:w-80 aspect-square">
+          <PixelImage
             src={portrait}
             alt="Project Snor portret"
-            width={512}
-            height={512}
-            className="absolute inset-0 w-full h-full object-contain pixel-reveal"
+            cols={20}
+            rows={20}
+            duration={2000}
+            startDelay={300}
+            className="w-full h-full"
           />
         </div>
 
