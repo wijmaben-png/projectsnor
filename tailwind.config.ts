@@ -65,6 +65,7 @@ export default {
       },
       fontFamily: {
         display: ['"Playfair Display"', "Georgia", "serif"],
+        title: ['"Ultra"', '"Playfair Display"', "Georgia", "serif"],
         sans: ['"Inter"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       keyframes: {

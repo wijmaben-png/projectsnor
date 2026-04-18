@@ -5,7 +5,7 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-10">
       <header className="w-full max-w-xl flex justify-center">
-        <h1 className="font-display font-black italic text-4xl md:text-6xl tracking-tight text-center">
+        <h1 className="font-title text-5xl md:text-7xl tracking-tight text-center leading-none">
           Project Snor
         </h1>
       </header>
