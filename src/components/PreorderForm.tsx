@@ -71,7 +71,7 @@ export const PreorderForm = () => {
     setSubmitting(true);
     const { data, error } = await supabase
       .from("preorders")
-      .insert(parsed.data)
+      .insert([parsed.data])
       .select("id")
       .single();
 
