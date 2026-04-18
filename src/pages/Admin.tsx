@@ -143,6 +143,9 @@ const Admin = () => {
             <TableHeader>
               <TableRow className="border-foreground hover:bg-transparent">
                 <TableHead className="text-foreground uppercase text-xs tracking-wider">
+                  #
+                </TableHead>
+                <TableHead className="text-foreground uppercase text-xs tracking-wider">
                   Datum
                 </TableHead>
                 <TableHead className="text-foreground uppercase text-xs tracking-wider">
@@ -165,13 +168,16 @@ const Admin = () => {
             <TableBody>
               {preorders.length === 0 ? (
                 <TableRow className="border-foreground hover:bg-transparent">
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     Nog geen bestellingen
                   </TableCell>
                 </TableRow>
               ) : (
-                preorders.map((p) => (
+                preorders.map((p, i) => (
                   <TableRow key={p.id} className="border-foreground hover:bg-secondary">
+                    <TableCell className="text-sm font-bold">
+                      {preorders.length - i}
+                    </TableCell>
                     <TableCell className="text-sm">
                       {new Date(p.created_at).toLocaleString("nl-NL")}
                     </TableCell>
