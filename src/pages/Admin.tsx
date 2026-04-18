@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 type Preorder = {
   id: string;
   created_at: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   tshirt_size: string;
@@ -77,10 +78,11 @@ const Admin = () => {
   };
 
   const handleExport = () => {
-    const headers = ["Datum", "Naam", "E-mail", "Telefoon", "Maat"];
+    const headers = ["Datum", "Voornaam", "Achternaam", "E-mail", "Telefoon", "Maat"];
     const rows = preorders.map((p) => [
       new Date(p.created_at).toISOString(),
-      p.full_name,
+      p.first_name,
+      p.last_name,
       p.email,
       p.phone,
       p.tshirt_size,
@@ -114,7 +116,7 @@ const Admin = () => {
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
               Project Snor
             </p>
-            <h1 className="text-2xl font-black uppercase tracking-tight mt-1">
+            <h1 className="font-display text-3xl font-black tracking-tight mt-1">
               Bestellingen ({preorders.length})
             </h1>
           </div>
@@ -144,7 +146,10 @@ const Admin = () => {
                   Datum
                 </TableHead>
                 <TableHead className="text-foreground uppercase text-xs tracking-wider">
-                  Naam
+                  Voornaam
+                </TableHead>
+                <TableHead className="text-foreground uppercase text-xs tracking-wider">
+                  Achternaam
                 </TableHead>
                 <TableHead className="text-foreground uppercase text-xs tracking-wider">
                   E-mail
@@ -160,7 +165,7 @@ const Admin = () => {
             <TableBody>
               {preorders.length === 0 ? (
                 <TableRow className="border-foreground hover:bg-transparent">
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Nog geen bestellingen
                   </TableCell>
                 </TableRow>
@@ -170,7 +175,8 @@ const Admin = () => {
                     <TableCell className="text-sm">
                       {new Date(p.created_at).toLocaleString("nl-NL")}
                     </TableCell>
-                    <TableCell className="text-sm">{p.full_name}</TableCell>
+                    <TableCell className="text-sm">{p.first_name}</TableCell>
+                    <TableCell className="text-sm">{p.last_name}</TableCell>
                     <TableCell className="text-sm">{p.email}</TableCell>
                     <TableCell className="text-sm">{p.phone}</TableCell>
                     <TableCell className="text-sm font-bold">{p.tshirt_size}</TableCell>

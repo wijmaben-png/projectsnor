@@ -12,71 +12,99 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
+const SIZES = ["S", "M", "L", "XL"] as const;
+type Size = (typeof SIZES)[number];
 
 const preorderSchema = z.object({
-  full_name: z
-    .string()
-    .trim()
-    .min(2, { message: "Vul je volledige naam in" })
-    .max(100, { message: "Naam is te lang" }),
-  email: z
-    .string()
-    .trim()
-    .email({ message: "Ongeldig e-mailadres" })
-    .max(255, { message: "E-mailadres is te lang" }),
+  first_name: z.string().trim().min(1).max(100),
+  last_name: z.string().trim().min(1).max(100),
+  email: z.string().trim().email().max(255),
   phone: z
     .string()
     .trim()
-    .min(6, { message: "Ongeldig telefoonnummer" })
-    .max(20, { message: "Telefoonnummer is te lang" })
-    .regex(/^[+\d\s()-]+$/, { message: "Alleen cijfers en + ( ) - toegestaan" }),
-  tshirt_size: z.enum(["S", "M", "L", "XL"], {
-    errorMap: () => ({ message: "Kies een maat" }),
-  }),
+    .min(6)
+    .max(20)
+    .regex(/^[+\d\s()-]+$/),
+  tshirt_size: z.enum(SIZES),
 });
 
 type FormState = {
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
-  tshirt_size: "" | "S" | "M" | "L" | "XL";
+  tshirt_size: "" | Size;
 };
 
 const initialState: FormState = {
-  full_name: "",
+  first_name: "",
+  last_name: "",
   email: "",
   phone: "",
   tshirt_size: "",
 };
+
+type FieldKey = keyof FormState;
 
 export const PreorderForm = () => {
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(initialState);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errors, setErrors] = useState<Set<FieldKey>>(new Set());
+  const [showError, setShowError] = useState(false);
+
+  const updateField = (key: FieldKey, value: string) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    if (errors.has(key) && value.trim() !== "") {
+      const next = new Set(errors);
+      next.delete(key);
+      setErrors(next);
+      if (next.size === 0) setShowError(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Required-field check first
+    const missing = new Set<FieldKey>();
+    (Object.keys(form) as FieldKey[]).forEach((k) => {
+      if (!String(form[k]).trim()) missing.add(k);
+    });
+    if (missing.size > 0) {
+      setErrors(missing);
+      setShowError(true);
+      return;
+    }
+
+    // Format validation
     const parsed = preorderSchema.safeParse(form);
     if (!parsed.success) {
-      const first = parsed.error.errors[0];
-      toast({
-        title: "Controleer het formulier",
-        description: first?.message ?? "Ongeldige invoer",
-        variant: "destructive",
+      const invalid = new Set<FieldKey>();
+      parsed.error.errors.forEach((err) => {
+        const path = err.path[0] as FieldKey | undefined;
+        if (path) invalid.add(path);
       });
+      setErrors(invalid);
+      setShowError(true);
       return;
     }
 
     setSubmitting(true);
     const { data, error } = await supabase
       .from("preorders")
-      .insert([{
-        full_name: parsed.data.full_name,
-        email: parsed.data.email,
-        phone: parsed.data.phone,
-        tshirt_size: parsed.data.tshirt_size,
-      }])
+      .insert([
+        {
+          first_name: parsed.data.first_name,
+          last_name: parsed.data.last_name,
+          email: parsed.data.email,
+          phone: parsed.data.phone,
+          tshirt_size: parsed.data.tshirt_size,
+        },
+      ])
       .select("id")
       .single();
 
@@ -90,19 +118,17 @@ export const PreorderForm = () => {
       return;
     }
 
-    // Fire-and-forget confirmation email
     supabase.functions
       .invoke("send-preorder-confirmation", {
         body: {
           preorder_id: data.id,
-          full_name: parsed.data.full_name,
+          first_name: parsed.data.first_name,
+          last_name: parsed.data.last_name,
           email: parsed.data.email,
           tshirt_size: parsed.data.tshirt_size,
         },
       })
-      .catch(() => {
-        // Silent — user already saw success
-      });
+      .catch(() => {});
 
     setSubmitting(false);
     setSuccess(true);
@@ -118,21 +144,44 @@ export const PreorderForm = () => {
     );
   }
 
+  const inputClass = (key: FieldKey) =>
+    cn(
+      "bg-background text-foreground placeholder:text-muted-foreground",
+      errors.has(key) ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
+    );
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="full_name" className="text-sm uppercase tracking-wide">
-          Volledige naam
-        </Label>
-        <Input
-          id="full_name"
-          type="text"
-          required
-          maxLength={100}
-          value={form.full_name}
-          onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-          className="bg-background border-foreground text-foreground placeholder:text-muted-foreground"
-        />
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="first_name" className="text-sm uppercase tracking-wide">
+            Voornaam
+          </Label>
+          <Input
+            id="first_name"
+            type="text"
+            maxLength={100}
+            value={form.first_name}
+            onChange={(e) => updateField("first_name", e.target.value)}
+            aria-invalid={errors.has("first_name")}
+            className={inputClass("first_name")}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="last_name" className="text-sm uppercase tracking-wide">
+            Achternaam
+          </Label>
+          <Input
+            id="last_name"
+            type="text"
+            maxLength={100}
+            value={form.last_name}
+            onChange={(e) => updateField("last_name", e.target.value)}
+            aria-invalid={errors.has("last_name")}
+            className={inputClass("last_name")}
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -142,11 +191,11 @@ export const PreorderForm = () => {
         <Input
           id="email"
           type="email"
-          required
           maxLength={255}
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="bg-background border-foreground text-foreground placeholder:text-muted-foreground"
+          onChange={(e) => updateField("email", e.target.value)}
+          aria-invalid={errors.has("email")}
+          className={inputClass("email")}
         />
       </div>
 
@@ -157,11 +206,11 @@ export const PreorderForm = () => {
         <Input
           id="phone"
           type="tel"
-          required
           maxLength={20}
           value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          className="bg-background border-foreground text-foreground placeholder:text-muted-foreground"
+          onChange={(e) => updateField("phone", e.target.value)}
+          aria-invalid={errors.has("phone")}
+          className={inputClass("phone")}
         />
       </div>
 
@@ -171,24 +220,33 @@ export const PreorderForm = () => {
         </Label>
         <Select
           value={form.tshirt_size}
-          onValueChange={(v) =>
-            setForm({ ...form, tshirt_size: v as FormState["tshirt_size"] })
-          }
+          onValueChange={(v) => updateField("tshirt_size", v)}
         >
           <SelectTrigger
             id="tshirt_size"
-            className="bg-background border-foreground text-foreground"
+            aria-invalid={errors.has("tshirt_size")}
+            className={inputClass("tshirt_size")}
           >
             <SelectValue placeholder="Kies een maat" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="S">S</SelectItem>
-            <SelectItem value="M">M</SelectItem>
-            <SelectItem value="L">L</SelectItem>
-            <SelectItem value="XL">XL</SelectItem>
+            {SIZES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
+
+      {showError && (
+        <p
+          role="alert"
+          className="border border-foreground bg-foreground text-background px-4 py-3 text-sm font-bold uppercase tracking-wide text-center"
+        >
+          Vul alle verplichte velden in om verder te gaan.
+        </p>
+      )}
 
       <Button
         type="submit"
