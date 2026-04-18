@@ -94,16 +94,17 @@
     text-transform: uppercase;
   }
 
-  /* Soft, slow shimmer on title — quiet and professional, plays once */
+  /* Slow, elegant looping shimmer on title — gentle sweep, long pause, repeats.
+     Sweep occupies ~3s of a 10s cycle, so there's a ~7s quiet pause between sweeps. */
   .title-shine {
     position: relative;
     display: inline-block;
     background: linear-gradient(
       100deg,
       hsl(var(--foreground)) 0%,
-      hsl(var(--foreground)) 45%,
-      hsl(0 0% 30%) 50%,
-      hsl(var(--foreground)) 55%,
+      hsl(var(--foreground)) 44%,
+      hsl(0 0% 38%) 50%,
+      hsl(var(--foreground)) 56%,
       hsl(var(--foreground)) 100%
     );
     background-size: 300% 100%;
@@ -112,39 +113,34 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: title-shine-sweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s 1 both;
+    animation: title-shine-loop 10s cubic-bezier(0.45, 0, 0.25, 1) 0.8s infinite both;
   }
 
-  @keyframes title-shine-sweep {
+  @keyframes title-shine-loop {
     0% {
       background-position: 100% 0;
+    }
+    30% {
+      background-position: 0% 0;
     }
     100% {
       background-position: 0% 0;
     }
   }
 
-  /* Diagonal chunky pixel-grid reveal — fills from top-left to bottom-right */
-  .pixel-reveal {
-    -webkit-mask-image:
-      linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0) 100%);
-            mask-image:
-      linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0) 100%);
-    -webkit-mask-size: 100% 100%;
-            mask-size: 100% 100%;
-    animation: pixel-diagonal-reveal 1.8s steps(14, end) 0.2s 1 both;
-    image-rendering: pixelated;
-    will-change: -webkit-mask-image, mask-image;
+  /* Each pixel tile fades in. Stagger is applied via inline animation-delay
+     based on (col + row) so the reveal sweeps diagonally from top-left. */
+  .pixel-tile {
+    opacity: 0;
+    animation: pixel-tile-in 220ms steps(1, end) both;
   }
 
-  @keyframes pixel-diagonal-reveal {
+  @keyframes pixel-tile-in {
     0% {
-      -webkit-mask-image: linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0) 100%);
-              mask-image: linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0) 100%);
+      opacity: 0;
     }
     100% {
-      -webkit-mask-image: linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 100%, hsl(0 0% 0% / 0) 100%, hsl(0 0% 0% / 0) 100%);
-              mask-image: linear-gradient(135deg, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 100%, hsl(0 0% 0% / 0) 100%, hsl(0 0% 0% / 0) 100%);
+      opacity: 1;
     }
   }
 }
