@@ -36,7 +36,15 @@ const Index = () => {
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
           Bij elke aankoop wordt €1 gedoneerd aan de
           <br />
-          <em className="font-display italic">Movember Foundation</em>.
+          <a
+            href="https://nl.movember.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-display italic underline underline-offset-4 hover:text-foreground transition-colors"
+          >
+            Movember Foundation
+          </a>
+          .
         </p>
       </section>
 
