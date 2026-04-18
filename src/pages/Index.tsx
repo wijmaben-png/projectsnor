@@ -34,7 +34,8 @@ const Index = () => {
         </p>
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Bij elke aankoop wordt €1 gedoneerd aan de{" "}
+          Bij elke aankoop wordt €1 gedoneerd aan de
+          <br />
           <em className="font-display italic">Movember Foundation</em>.
         </p>
       </section>
