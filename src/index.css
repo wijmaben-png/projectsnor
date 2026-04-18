@@ -143,4 +143,34 @@
       opacity: 1;
     }
   }
+
+  /* Subtle, looping bounce on the price */
+  .price-bounce {
+    display: inline-block;
+    animation: price-bounce 2.4s ease-in-out 1.5s infinite both;
+    transform-origin: center bottom;
+    will-change: transform;
+  }
+
+  @keyframes price-bounce {
+    0%, 70%, 100% {
+      transform: translateY(0);
+    }
+    80% {
+      transform: translateY(-10px);
+    }
+    88% {
+      transform: translateY(0);
+    }
+    93% {
+      transform: translateY(-4px);
+    }
+    97% {
+      transform: translateY(0);
+    }
+  }
+    100% {
+      opacity: 1;
+    }
+  }
 }
