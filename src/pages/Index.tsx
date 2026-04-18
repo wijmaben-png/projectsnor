@@ -29,12 +29,13 @@ const Index = () => {
           Bestel jouw shirt voor
         </h2>
 
-        <p className="mt-3 font-title text-6xl md:text-7xl">
+        <p className="mt-3 font-title text-6xl md:text-7xl price-bounce">
           €27,99
         </p>
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation.
+          Bij elke aankoop wordt €1 gedoneerd aan de{" "}
+          <em className="font-display italic">Movember Foundation</em>.
         </p>
       </section>
 
