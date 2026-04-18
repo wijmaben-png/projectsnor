@@ -6,7 +6,8 @@ const corsHeaders = {
 
 interface Payload {
   preorder_id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   tshirt_size: string;
 }
@@ -23,27 +24,29 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as Payload;
-    const { full_name, email, tshirt_size } = body;
+    const { first_name, last_name, email, tshirt_size } = body;
 
-    if (!email || !full_name || !tshirt_size) {
+    if (!email || !first_name || !last_name || !tshirt_size) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
+    const fullName = `${first_name} ${last_name}`;
+
     const html = `
-      <div style="font-family: Arial, sans-serif; background:#000; color:#fff; padding:32px;">
-        <h1 style="font-size:24px; letter-spacing:4px; text-transform:uppercase; margin:0 0 24px;">Project Snor</h1>
-        <p style="font-size:18px; margin:0 0 16px;">Bedankt voor je bestelling, ${full_name}!</p>
+      <div style="font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#000; padding:32px;">
+        <h1 style="font-size:32px; font-style:italic; margin:0 0 24px;">Project Snor</h1>
+        <p style="font-size:18px; margin:0 0 16px;">Bedankt voor je bestelling, ${fullName}!</p>
         <p style="margin:0 0 16px;">We hebben je pre-order ontvangen voor:</p>
         <ul style="margin:0 0 24px; padding-left:20px;">
           <li><strong>T-shirtmaat:</strong> ${tshirt_size}</li>
-          <li><strong>Prijs:</strong> €27,99</li>
+          <li><strong>Prijs:</strong> €27.99</li>
         </ul>
         <p style="margin:0 0 16px;">We nemen snel contact met je op met betalings- en verzendinformatie.</p>
         <p style="margin:0 0 24px;">Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation. Bedankt voor je steun!</p>
-        <p style="font-size:12px; color:#999; margin:32px 0 0;">— Project Snor</p>
+        <p style="font-size:12px; color:#666; margin:32px 0 0;">— Project Snor</p>
       </div>
     `;
 
