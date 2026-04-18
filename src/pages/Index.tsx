@@ -11,18 +11,23 @@ const Index = () => {
       </header>
 
       <section className="w-full max-w-xl flex flex-col items-center mt-8">
-        <img
-          src={portrait}
-          alt="Project Snor portret"
-          className="w-64 md:w-80 h-auto pixel-reveal"
-        />
+        {/* Reserve fixed aspect-ratio space so layout doesn't shift while image loads/animates */}
+        <div className="w-64 md:w-80 aspect-square relative overflow-hidden">
+          <img
+            src={portrait}
+            alt="Project Snor portret"
+            width={512}
+            height={512}
+            className="absolute inset-0 w-full h-full object-contain pixel-reveal"
+          />
+        </div>
 
-        <h2 className="mt-10 font-display text-2xl md:text-3xl font-bold tracking-tight text-center">
+        <h2 className="mt-10 font-title text-4xl md:text-5xl text-center">
           Bestel jouw shirt voor
         </h2>
 
-        <p className="mt-3 font-display text-6xl md:text-7xl font-black tracking-tight">
-          €27.99
+        <p className="mt-3 font-title text-6xl md:text-7xl">
+          €27,99
         </p>
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
