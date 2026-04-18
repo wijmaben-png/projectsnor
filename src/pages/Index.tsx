@@ -26,7 +26,7 @@ const Index = () => {
         </div>
 
         <h2 className="mt-10 font-title text-4xl md:text-5xl text-center">
-          Bestel jouw shirt voor
+          Pre-order jouw shirt voor
         </h2>
 
         <p className="mt-3 font-title text-6xl md:text-7xl price-bounce">
