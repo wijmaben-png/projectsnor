@@ -1,0 +1,81 @@
+import { corsHeaders } from "@supabase/supabase-js/cors";
+
+interface Payload {
+  preorder_id: string;
+  full_name: string;
+  email: string;
+  tshirt_size: string;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
+    const body = (await req.json()) as Payload;
+    const { full_name, email, tshirt_size } = body;
+
+    if (!email || !full_name || !tshirt_size) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; background:#000; color:#fff; padding:32px;">
+        <h1 style="font-size:24px; letter-spacing:4px; text-transform:uppercase; margin:0 0 24px;">Project Snor</h1>
+        <p style="font-size:18px; margin:0 0 16px;">Bedankt voor je bestelling, ${full_name}!</p>
+        <p style="margin:0 0 16px;">We hebben je pre-order ontvangen voor:</p>
+        <ul style="margin:0 0 24px; padding-left:20px;">
+          <li><strong>T-shirtmaat:</strong> ${tshirt_size}</li>
+          <li><strong>Prijs:</strong> €27,99</li>
+        </ul>
+        <p style="margin:0 0 16px;">We nemen snel contact met je op met betalings- en verzendinformatie.</p>
+        <p style="margin:0 0 24px;">Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation. Bedankt voor je steun!</p>
+        <p style="font-size:12px; color:#999; margin:32px 0 0;">— Project Snor</p>
+      </div>
+    `;
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Project Snor <onboarding@resend.dev>",
+        to: [email],
+        subject: "Bedankt voor je Project Snor bestelling",
+        html,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("Resend error:", data);
+      return new Response(JSON.stringify({ error: data }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, id: data.id }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("send-preorder-confirmation error:", msg);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
