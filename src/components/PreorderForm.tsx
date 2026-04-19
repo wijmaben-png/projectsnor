@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,38 @@ export const PreorderForm = () => {
   const [errors, setErrors] = useState<Set<FieldKey>>(new Set());
   const [showError, setShowError] = useState(false);
   const [discountStatus, setDiscountStatus] = useState<"none" | "valid" | "invalid">("none");
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  // Fetch live shipping cost from Sendcloud when "shipping" is selected
+  useEffect(() => {
+    if (form.delivery_method !== "shipping") {
+      setShippingCost(null);
+      return;
+    }
+    let cancelled = false;
+    setShippingLoading(true);
+    supabase.functions
+      .invoke("get-shipping-cost", { body: {} })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data?.shipping_cost) {
+          setShippingCost(4.5);
+        } else {
+          setShippingCost(Number(data.shipping_cost));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setShippingLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [form.delivery_method]);
+
+  const shirtPrice = discountStatus === "valid" && form.discount_code.trim() ? 29.99 : 32.99;
+  const effectiveShipping = form.delivery_method === "shipping" ? (shippingCost ?? 0) : 0;
+  const orderTotal = Math.round((shirtPrice + effectiveShipping) * 100) / 100;
+  const fmt = (n: number) =>
+    n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const updateField = (key: FieldKey, value: string) => {
     setForm((f) => ({ ...f, [key]: value }));
