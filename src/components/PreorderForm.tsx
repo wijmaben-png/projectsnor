@@ -384,6 +384,7 @@ export const PreorderForm = () => {
         </div>
       )}
 
+      {showError && (
         <p role="alert"
           className="border border-foreground bg-foreground text-background px-4 py-3 text-sm font-bold uppercase tracking-wide text-center">
           Vul alle verplichte velden in om verder te gaan.
