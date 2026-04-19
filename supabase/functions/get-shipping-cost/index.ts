@@ -22,12 +22,13 @@ Deno.serve(async (req) => {
     const res = await fetch(url, {
       headers: { Authorization: auth, "Content-Type": "application/json" },
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       console.error("Sendcloud shipping_methods error:", data);
+      // Graceful fallback so the customer-facing form always has a price.
       return new Response(
-        JSON.stringify({ error: "sendcloud_error", details: data }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ shipping_cost: 4.5, currency: "EUR", fallback: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
