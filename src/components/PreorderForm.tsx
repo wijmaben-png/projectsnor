@@ -349,7 +349,41 @@ export const PreorderForm = () => {
         </div>
       )}
 
-      {showError && (
+      {(form.delivery_method === "pickup" || form.delivery_method === "shipping") && (
+        <div className="border border-foreground p-4 space-y-1 text-sm">
+          <div className="text-xs uppercase tracking-wider font-bold mb-2">Besteloverzicht</div>
+          <div className="flex justify-between">
+            <span>Shirtprijs</span>
+            <span>€{fmt(shirtPrice)}</span>
+          </div>
+          {form.delivery_method === "shipping" && (
+            <div className="flex justify-between">
+              <span>Verzendkosten</span>
+              <span>
+                {shippingLoading || shippingCost === null
+                  ? "Berekenen..."
+                  : `€${fmt(effectiveShipping)}`}
+              </span>
+            </div>
+          )}
+          {form.delivery_method === "pickup" && (
+            <div className="flex justify-between text-muted-foreground">
+              <span>Ophalen bij het Snorrenfeest</span>
+              <span>Gratis</span>
+            </div>
+          )}
+          <div className="border-t border-foreground my-2" />
+          <div className="flex justify-between font-bold text-base">
+            <span>Totaal</span>
+            <span>
+              {form.delivery_method === "shipping" && (shippingLoading || shippingCost === null)
+                ? "—"
+                : `€${fmt(orderTotal)}`}
+            </span>
+          </div>
+        </div>
+      )}
+
         <p role="alert"
           className="border border-foreground bg-foreground text-background px-4 py-3 text-sm font-bold uppercase tracking-wide text-center">
           Vul alle verplichte velden in om verder te gaan.
