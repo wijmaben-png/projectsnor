@@ -315,11 +315,11 @@ export const PreorderForm = () => {
         >
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="pickup" id="dm-pickup" className="rounded-none" />
-            <span className="text-sm">Ophalen bij het Snorrenfeest (29 mei) (gratis)</span>
+            <span className="text-sm">Ophalen bij het Snorrenfeest 29 mei</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="shipping" id="dm-ship" className="rounded-none" />
-            <span className="text-sm">Verzenden naar mijn adres (€4)</span>
+            <span className="text-sm">Verzenden naar mijn adres</span>
           </label>
         </RadioGroup>
       </div>
