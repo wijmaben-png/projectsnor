@@ -20,6 +20,7 @@ type Preorder = {
   email: string;
   phone: string;
   tshirt_size: string;
+  tshirt_color: string;
 };
 
 const Admin = () => {
@@ -78,7 +79,7 @@ const Admin = () => {
   };
 
   const handleExport = () => {
-    const headers = ["Datum", "Voornaam", "Achternaam", "E-mail", "Telefoon", "Maat"];
+    const headers = ["Datum", "Voornaam", "Achternaam", "E-mail", "Telefoon", "Maat", "Kleur"];
     const rows = preorders.map((p) => [
       new Date(p.created_at).toISOString(),
       p.first_name,
@@ -86,6 +87,7 @@ const Admin = () => {
       p.email,
       p.phone,
       p.tshirt_size,
+      p.tshirt_color,
     ]);
     const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
     const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
@@ -163,12 +165,15 @@ const Admin = () => {
                 <TableHead className="text-foreground uppercase text-xs tracking-wider">
                   Maat
                 </TableHead>
+                <TableHead className="text-foreground uppercase text-xs tracking-wider">
+                  Kleur
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {preorders.length === 0 ? (
                 <TableRow className="border-foreground hover:bg-transparent">
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     Nog geen bestellingen
                   </TableCell>
                 </TableRow>
@@ -186,6 +191,9 @@ const Admin = () => {
                     <TableCell className="text-sm">{p.email}</TableCell>
                     <TableCell className="text-sm">{p.phone}</TableCell>
                     <TableCell className="text-sm font-bold">{p.tshirt_size}</TableCell>
+                    <TableCell className="text-sm font-bold capitalize">
+                      {p.tshirt_color === "black" ? "Zwart" : p.tshirt_color === "white" ? "Wit" : p.tshirt_color}
+                    </TableCell>
                   </TableRow>
                 ))
               )}

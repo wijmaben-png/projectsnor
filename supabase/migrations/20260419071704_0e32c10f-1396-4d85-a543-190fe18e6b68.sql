@@ -1,0 +1,1 @@
+ALTER TABLE public.preorders ADD COLUMN tshirt_color text NOT NULL DEFAULT 'black';
