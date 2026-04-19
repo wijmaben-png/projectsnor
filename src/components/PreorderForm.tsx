@@ -395,6 +395,10 @@ export const PreorderForm = () => {
         className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-none text-base font-bold uppercase tracking-wider">
         {submitting ? "Bezig..." : "Bestel nu & Betaal"}
       </Button>
+
+      <p className="text-xs text-muted-foreground text-center">
+        Let op: omdat dit een speciale pre-order is, is retourneren niet mogelijk.
+      </p>
     </form>
   );
 };
