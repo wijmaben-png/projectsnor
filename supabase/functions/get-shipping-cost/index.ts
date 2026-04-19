@@ -34,25 +34,34 @@ Deno.serve(async (req) => {
 
     const methods: Array<{
       name?: string;
+      carrier?: string;
       min_weight?: string;
       max_weight?: string;
-      countries?: Array<{ iso_2?: string; price?: number }>;
+      countries?: Array<{ iso_2?: string; price?: number | string }>;
     }> = data.shipping_methods ?? [];
 
     const weight = 0.3;
     let cheapest: number | null = null;
+    let cheapestName: string | null = null;
 
     for (const m of methods) {
       const min = parseFloat(m.min_weight ?? "0");
       const max = parseFloat(m.max_weight ?? "999");
       if (weight < min || weight > max) continue;
       const nl = m.countries?.find((c) => c.iso_2 === "NL");
-      if (!nl || typeof nl.price !== "number" || nl.price <= 0) continue;
-      if (cheapest === null || nl.price < cheapest) cheapest = nl.price;
+      if (!nl) continue;
+      const price = typeof nl.price === "string" ? parseFloat(nl.price) : nl.price;
+      if (typeof price !== "number" || isNaN(price) || price <= 0) continue;
+      if (cheapest === null || price < cheapest) {
+        cheapest = price;
+        cheapestName = `${m.carrier ?? ""} ${m.name ?? ""}`.trim();
+      }
     }
 
+    console.log(`get-shipping-cost: scanned ${methods.length} methods, cheapest=${cheapest} (${cheapestName})`);
+
     if (cheapest === null) {
-      // Fallback price if Sendcloud returns no usable rate
+      console.warn("get-shipping-cost: no usable rate found, using fallback 4.5");
       cheapest = 4.5;
     }
 
