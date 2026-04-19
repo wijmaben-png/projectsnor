@@ -12,7 +12,6 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -23,25 +22,6 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/admin` },
-      });
-      setLoading(false);
-      if (error) {
-        toast({ title: "Aanmelden mislukt", description: error.message, variant: "destructive" });
-        return;
-      }
-      toast({
-        title: "Account aangemaakt",
-        description: "Je kunt nu inloggen.",
-      });
-      setMode("signin");
-      return;
-    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
@@ -91,15 +71,9 @@ const AdminLogin = () => {
             disabled={loading}
             className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-wider"
           >
-            {loading ? "Bezig..." : mode === "signin" ? "Inloggen" : "Account aanmaken"}
+            {loading ? "Bezig..." : "Inloggen"}
           </Button>
         </form>
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="w-full mt-6 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin" ? "Nieuw account aanmaken" : "Terug naar inloggen"}
-        </button>
       </div>
     </main>
   );
