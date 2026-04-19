@@ -16,32 +16,68 @@ export type Database = {
     Tables: {
       preorders: {
         Row: {
+          amount_paid: number | null
+          city: string | null
           created_at: string
+          delivery_method: string
+          discount_code_used: boolean
           email: string
           first_name: string
           id: string
+          label_created_at: string | null
           last_name: string
+          mollie_payment_id: string | null
+          payment_status: string
           phone: string
+          postal_code: string | null
+          sendcloud_parcel_id: string | null
+          street: string | null
+          tracking_number: string | null
+          tracking_url: string | null
           tshirt_color: string
           tshirt_size: string
         }
         Insert: {
+          amount_paid?: number | null
+          city?: string | null
           created_at?: string
+          delivery_method?: string
+          discount_code_used?: boolean
           email: string
           first_name: string
           id?: string
+          label_created_at?: string | null
           last_name: string
+          mollie_payment_id?: string | null
+          payment_status?: string
           phone: string
+          postal_code?: string | null
+          sendcloud_parcel_id?: string | null
+          street?: string | null
+          tracking_number?: string | null
+          tracking_url?: string | null
           tshirt_color?: string
           tshirt_size: string
         }
         Update: {
+          amount_paid?: number | null
+          city?: string | null
           created_at?: string
+          delivery_method?: string
+          discount_code_used?: boolean
           email?: string
           first_name?: string
           id?: string
+          label_created_at?: string | null
           last_name?: string
+          mollie_payment_id?: string | null
+          payment_status?: string
           phone?: string
+          postal_code?: string | null
+          sendcloud_parcel_id?: string | null
+          street?: string | null
+          tracking_number?: string | null
+          tracking_url?: string | null
           tshirt_color?: string
           tshirt_size?: string
         }
