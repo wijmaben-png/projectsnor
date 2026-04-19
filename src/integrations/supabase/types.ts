@@ -22,6 +22,7 @@ export type Database = {
           id: string
           last_name: string
           phone: string
+          tshirt_color: string
           tshirt_size: string
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           id?: string
           last_name: string
           phone: string
+          tshirt_color?: string
           tshirt_size: string
         }
         Update: {
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           last_name?: string
           phone?: string
+          tshirt_color?: string
           tshirt_size?: string
         }
         Relationships: []
