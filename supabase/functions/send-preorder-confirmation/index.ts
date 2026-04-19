@@ -10,6 +10,7 @@ interface Payload {
   last_name: string;
   email: string;
   tshirt_size: string;
+  tshirt_color: string;
 }
 
 Deno.serve(async (req) => {
@@ -24,9 +25,9 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as Payload;
-    const { first_name, last_name, email, tshirt_size } = body;
+    const { first_name, last_name, email, tshirt_size, tshirt_color } = body;
 
-    if (!email || !first_name || !last_name || !tshirt_size) {
+    if (!email || !first_name || !last_name || !tshirt_size || !tshirt_color) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -34,6 +35,7 @@ Deno.serve(async (req) => {
     }
 
     const fullName = `${first_name} ${last_name}`;
+    const colorLabel = tshirt_color === "black" ? "Zwart" : tshirt_color === "white" ? "Wit" : tshirt_color;
 
     const html = `
       <div style="font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#000; padding:32px;">
@@ -42,6 +44,7 @@ Deno.serve(async (req) => {
         <p style="margin:0 0 16px;">We hebben je pre-order ontvangen voor:</p>
         <ul style="margin:0 0 24px; padding-left:20px;">
           <li><strong>T-shirtmaat:</strong> ${tshirt_size}</li>
+          <li><strong>Kleur:</strong> ${colorLabel}</li>
           <li><strong>Prijs:</strong> €27.99</li>
         </ul>
         <p style="margin:0 0 16px;">We nemen snel contact met je op met betalings- en verzendinformatie.</p>
