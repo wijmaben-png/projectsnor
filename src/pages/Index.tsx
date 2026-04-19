@@ -69,7 +69,7 @@ const Index = () => {
         </h2>
 
         <p className="mt-3 font-title text-6xl md:text-7xl price-bounce">
-          €27,99
+          €32,99
         </p>
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
@@ -85,7 +85,22 @@ const Index = () => {
           </a>
           .
         </p>
+
+        <div className="mt-8 flex justify-center w-full">
+          <ShirtPreview />
+        </div>
       </section>
+
+      {banner && (
+        <div
+          role="status"
+          className={`w-full max-w-md mt-8 border border-foreground px-4 py-3 text-sm font-bold uppercase tracking-wide text-center ${
+            banner.kind === "success" ? "bg-foreground text-background" : "bg-background text-foreground"
+          }`}
+        >
+          {banner.text}
+        </div>
+      )}
 
       <section className="w-full max-w-md mt-10 mb-16">
         <PreorderForm />

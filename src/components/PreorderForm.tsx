@@ -262,7 +262,7 @@ export const PreorderForm = () => {
           </Button>
         </div>
         {discountStatus === "valid" && form.discount_code.trim() && (
-          <p className="text-sm font-medium text-green-700 dark:text-green-400">
+          <p className="text-sm font-medium border border-foreground bg-foreground text-background px-3 py-2">
             Kortingscode toegepast! Je betaalt €29,99.
           </p>
         )}
