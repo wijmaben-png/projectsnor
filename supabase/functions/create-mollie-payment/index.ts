@@ -68,7 +68,50 @@ Deno.serve(async (req) => {
       }
     }
 
-    const amount = discountValid ? PRICE_DISCOUNTED : PRICE_DEFAULT;
+    const shirtPrice = discountValid ? PRICE_DISCOUNTED : PRICE_DEFAULT;
+
+    // Fetch live shipping cost from Sendcloud when shipping
+    let shippingCost = 0;
+    if (data.delivery_method === "shipping") {
+      const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY");
+      const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY");
+      if (SENDCLOUD_PUBLIC_KEY && SENDCLOUD_SECRET_KEY) {
+        try {
+          const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
+          const scRes = await fetch(
+            "https://panel.sendcloud.sc/api/v2/shipping_methods?to_country=NL",
+            { headers: { Authorization: auth, "Content-Type": "application/json" } },
+          );
+          const scData = await scRes.json();
+          if (scRes.ok) {
+            const weight = 0.3;
+            let cheapest: number | null = null;
+            for (const m of (scData.shipping_methods ?? []) as Array<{
+              min_weight?: string; max_weight?: string;
+              countries?: Array<{ iso_2?: string; price?: number }>;
+            }>) {
+              const min = parseFloat(m.min_weight ?? "0");
+              const max = parseFloat(m.max_weight ?? "999");
+              if (weight < min || weight > max) continue;
+              const nl = m.countries?.find((c) => c.iso_2 === "NL");
+              if (!nl || typeof nl.price !== "number" || nl.price <= 0) continue;
+              if (cheapest === null || nl.price < cheapest) cheapest = nl.price;
+            }
+            shippingCost = cheapest !== null ? Math.round(cheapest * 100) / 100 : 4.5;
+          } else {
+            console.error("Sendcloud rate lookup failed:", scData);
+            shippingCost = 4.5;
+          }
+        } catch (e) {
+          console.error("Sendcloud rate lookup error:", e);
+          shippingCost = 4.5;
+        }
+      } else {
+        shippingCost = 4.5;
+      }
+    }
+
+    const amount = Math.round((shirtPrice + shippingCost) * 100) / 100;
     const amountStr = amount.toFixed(2);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -89,6 +132,7 @@ Deno.serve(async (req) => {
         city: data.delivery_method === "shipping" ? data.city : null,
         discount_code_used: discountValid,
         amount_paid: amount,
+        shipping_cost: shippingCost,
         payment_status: "pending",
       })
       .select("id")
@@ -146,6 +190,7 @@ Deno.serve(async (req) => {
         payment_id: mollieData.id,
         preorder_id: preorder.id,
         amount: amountStr,
+        shipping_cost: shippingCost,
         discount_applied: discountValid,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
