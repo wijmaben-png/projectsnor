@@ -14,10 +14,6 @@ Deno.serve(async (req) => {
       throw new Error("Sendcloud env missing");
     }
 
-    console.log(
-      `Sendcloud creds present. public.length=${SENDCLOUD_PUBLIC_KEY.length}, secret.length=${SENDCLOUD_SECRET_KEY.length}, public.first8=${SENDCLOUD_PUBLIC_KEY.slice(0, 8)}`,
-    );
-
     const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
     const url = "https://panel.sendcloud.sc/api/v2/shipping_methods?to_country=NL";
 
@@ -29,7 +25,7 @@ Deno.serve(async (req) => {
       },
     });
     const text = await res.text();
-    console.log(`Sendcloud status=${res.status}, body.length=${text.length}, body.first200=${text.slice(0, 200)}`);
+    console.log(`Sendcloud status=${res.status}`);
 
     if (!res.ok) {
       return new Response(

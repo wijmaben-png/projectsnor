@@ -80,7 +80,9 @@ Deno.serve(async (req) => {
     // On first paid transition, send confirmation email
     if (dbStatus === "paid" && !wasPaid) {
       try {
+        const INTERNAL_FUNCTION_SECRET = Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "";
         await supabase.functions.invoke("send-preorder-confirmation", {
+          headers: { "x-internal-secret": INTERNAL_FUNCTION_SECRET },
           body: {
             preorder_id: row.id,
             first_name: row.first_name,
