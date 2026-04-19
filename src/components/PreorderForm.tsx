@@ -17,6 +17,9 @@ import { cn } from "@/lib/utils";
 const SIZES = ["S", "M", "L", "XL"] as const;
 type Size = (typeof SIZES)[number];
 
+const COLORS = ["black", "white"] as const;
+type Color = (typeof COLORS)[number];
+
 const preorderSchema = z.object({
   first_name: z.string().trim().min(1).max(100),
   last_name: z.string().trim().min(1).max(100),
@@ -28,6 +31,7 @@ const preorderSchema = z.object({
     .max(20)
     .regex(/^[+\d\s()-]+$/),
   tshirt_size: z.enum(SIZES),
+  tshirt_color: z.enum(COLORS),
 });
 
 type FormState = {
@@ -36,6 +40,7 @@ type FormState = {
   email: string;
   phone: string;
   tshirt_size: "" | Size;
+  tshirt_color: "" | Color;
 };
 
 const initialState: FormState = {
@@ -44,6 +49,7 @@ const initialState: FormState = {
   email: "",
   phone: "",
   tshirt_size: "",
+  tshirt_color: "",
 };
 
 type FieldKey = keyof FormState;
@@ -103,6 +109,7 @@ export const PreorderForm = () => {
           email: parsed.data.email,
           phone: parsed.data.phone,
           tshirt_size: parsed.data.tshirt_size,
+          tshirt_color: parsed.data.tshirt_color,
         },
       ]);
 
@@ -124,6 +131,7 @@ export const PreorderForm = () => {
           last_name: parsed.data.last_name,
           email: parsed.data.email,
           tshirt_size: parsed.data.tshirt_size,
+          tshirt_color: parsed.data.tshirt_color,
         },
       })
       .catch(() => {});
@@ -233,6 +241,28 @@ export const PreorderForm = () => {
                 {s}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="tshirt_color" className="text-sm uppercase tracking-wide">
+          T-shirtkleur
+        </Label>
+        <Select
+          value={form.tshirt_color}
+          onValueChange={(v) => updateField("tshirt_color", v)}
+        >
+          <SelectTrigger
+            id="tshirt_color"
+            aria-invalid={errors.has("tshirt_color")}
+            className={inputClass("tshirt_color")}
+          >
+            <SelectValue placeholder="Kies een kleur" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="black">Zwart</SelectItem>
+            <SelectItem value="white">Wit</SelectItem>
           </SelectContent>
         </Select>
       </div>
