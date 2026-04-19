@@ -31,6 +31,7 @@ export type Database = {
           phone: string
           postal_code: string | null
           sendcloud_parcel_id: string | null
+          shipping_cost: number | null
           street: string | null
           tracking_number: string | null
           tracking_url: string | null
@@ -53,6 +54,7 @@ export type Database = {
           phone: string
           postal_code?: string | null
           sendcloud_parcel_id?: string | null
+          shipping_cost?: number | null
           street?: string | null
           tracking_number?: string | null
           tracking_url?: string | null
@@ -75,6 +77,7 @@ export type Database = {
           phone?: string
           postal_code?: string | null
           sendcloud_parcel_id?: string | null
+          shipping_cost?: number | null
           street?: string | null
           tracking_number?: string | null
           tracking_url?: string | null
