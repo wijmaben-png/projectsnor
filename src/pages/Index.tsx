@@ -64,7 +64,7 @@ const Index = () => {
           />
         </div>
 
-        <h2 className="mt-10 font-title text-4xl md:text-5xl text-center">
+        <h2 className="mt-10 font-title text-3xl md:text-4xl text-center">
           Bestel jouw shirt voor
         </h2>
 
