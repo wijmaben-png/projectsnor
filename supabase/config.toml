@@ -1,1 +1,13 @@
 project_id = "kjrzqlzkwieaxbfubhrv"
+
+[functions.create-mollie-payment]
+verify_jwt = false
+
+[functions.mollie-webhook]
+verify_jwt = false
+
+[functions.send-preorder-confirmation]
+verify_jwt = false
+
+[functions.create-sendcloud-shipment]
+verify_jwt = true

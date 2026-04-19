@@ -1,8 +1,47 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PreorderForm } from "@/components/PreorderForm";
 import { PixelImage } from "@/components/PixelImage";
+import { ShirtPreview } from "@/components/ShirtPreview";
+import { supabase } from "@/integrations/supabase/client";
 import portrait from "@/assets/project-snor-portrait.png";
 
 const Index = () => {
+  const [params, setParams] = useSearchParams();
+  const [banner, setBanner] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    const orderId = params.get("order");
+    if (!orderId) return;
+    let cancelled = false;
+    (async () => {
+      // Poll a few times for the webhook
+      for (let i = 0; i < 6; i++) {
+        const { data } = await supabase
+          .from("preorders")
+          .select("payment_status")
+          .eq("id", orderId)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data?.payment_status === "paid") {
+          setBanner({ kind: "success", text: "Bedankt voor je bestelling! Je ontvangt een bevestiging per e-mail." });
+          break;
+        }
+        if (data?.payment_status === "failed" || data?.payment_status === "canceled" || data?.payment_status === "expired") {
+          setBanner({ kind: "error", text: "Je betaling is niet gelukt. Probeer het opnieuw." });
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      // clean URL
+      const next = new URLSearchParams(params);
+      next.delete("order");
+      setParams(next, { replace: true });
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-10">
       <header className="w-full max-w-xl flex justify-center">
