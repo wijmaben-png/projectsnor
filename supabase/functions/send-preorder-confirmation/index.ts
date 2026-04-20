@@ -13,6 +13,9 @@ interface Payload {
   tshirt_color: string;
   delivery_method?: string;
   amount_paid?: number;
+  street?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -33,7 +36,10 @@ Deno.serve(async (req) => {
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
 
     const body = (await req.json()) as Payload;
-    const { first_name, last_name, email, tshirt_size, tshirt_color, delivery_method, amount_paid } = body;
+    const {
+      first_name, last_name, email, tshirt_size, tshirt_color,
+      delivery_method, amount_paid, street, postal_code, city,
+    } = body;
 
     if (!email || !first_name || !last_name || !tshirt_size || !tshirt_color) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -41,26 +47,36 @@ Deno.serve(async (req) => {
       });
     }
 
-    const fullName = `${first_name} ${last_name}`;
     const colorLabel = tshirt_color === "black" ? "Zwart" : tshirt_color === "white" ? "Wit" : tshirt_color;
-    const deliveryLabel = delivery_method === "shipping"
-      ? "Verzenden naar je adres (gratis)"
-      : "Ophalen bij het Snorrenfeest (29 mei)";
     const priceLabel = typeof amount_paid === "number" ? `€${amount_paid.toFixed(2)}` : "—";
+    const isShipping = delivery_method === "shipping";
+    const addressLine = isShipping && street
+      ? `${street}, ${postal_code ?? ""} ${city ?? ""}`.trim()
+      : "";
+
+    const deliveryBlock = isShipping
+      ? `<p style="margin:0 0 16px;">Je shirt wordt verzonden naar <strong>${addressLine}</strong>. Je ontvangt zo snel mogelijk een tracking nummer.</p>`
+      : `<p style="margin:0 0 16px;">Je shirt kun je ophalen op <strong>29 mei tijdens het Snorrenfeest</strong>. We zien je daar!</p>`;
 
     const html = `
-      <div style="font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#000; padding:32px;">
+      <div style="font-family: Georgia, 'Times New Roman', serif; background:#ffffff; color:#000000; padding:32px; max-width:560px; margin:0 auto;">
         <h1 style="font-size:32px; font-style:italic; margin:0 0 24px;">Project Snor</h1>
-        <p style="font-size:18px; margin:0 0 16px;">Bedankt voor je bestelling, ${fullName}!</p>
-        <p style="margin:0 0 16px;">Je betaling is bevestigd. Hier zijn je bestelgegevens:</p>
-        <ul style="margin:0 0 24px; padding-left:20px;">
-          <li><strong>T-shirtmaat:</strong> ${tshirt_size}</li>
-          <li><strong>Kleur:</strong> ${colorLabel}</li>
-          <li><strong>Bezorgmethode:</strong> ${deliveryLabel}</li>
-          <li><strong>Betaald bedrag:</strong> ${priceLabel}</li>
-        </ul>
-        <p style="margin:0 0 16px;">Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation. Bedankt voor je steun!</p>
-        <p style="font-size:12px; color:#666; margin:32px 0 0;">— Project Snor</p>
+        <p style="font-size:18px; margin:0 0 16px;">Hey ${first_name}!</p>
+        <p style="margin:0 0 16px;">Bedankt voor je bestelling bij Project Snor.</p>
+
+        <div style="border:1px solid #000000; padding:16px 20px; margin:24px 0;">
+          <p style="margin:0 0 8px; font-style:italic;">Je bestelling</p>
+          <ul style="margin:0; padding-left:18px;">
+            <li><strong>Maat:</strong> ${tshirt_size}</li>
+            <li><strong>Kleur:</strong> ${colorLabel}</li>
+            <li><strong>Totaalbedrag:</strong> ${priceLabel}</li>
+          </ul>
+        </div>
+
+        ${deliveryBlock}
+
+        <p style="margin:24px 0 0;">Groetjes,<br/>het Project Snor team</p>
+        <p style="font-size:12px; color:#666; margin:32px 0 0;">Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation.</p>
       </div>
     `;
 
@@ -70,7 +86,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: "Project Snor <onboarding@resend.dev>",
         to: [email],
-        subject: "Bedankt voor je Project Snor bestelling",
+        subject: "Bedankt voor je bestelling bij Project Snor!",
         html,
       }),
     });

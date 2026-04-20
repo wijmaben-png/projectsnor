@@ -92,6 +92,9 @@ Deno.serve(async (req) => {
             tshirt_color: row.tshirt_color,
             delivery_method: row.delivery_method,
             amount_paid: row.amount_paid,
+            street: row.street,
+            postal_code: row.postal_code,
+            city: row.city,
           },
         });
       } catch (e) {
