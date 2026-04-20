@@ -10,7 +10,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-sendcloud-shipment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.get-shipping-cost]
 verify_jwt = false
