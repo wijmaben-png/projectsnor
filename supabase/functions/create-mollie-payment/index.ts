@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
 
     const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\./)?.[1];
     const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/mollie-webhook`;
-    const redirectUrl = `${PUBLIC_SITE_URL.replace(/\/$/, "")}/?order=${preorder.id}`;
+    const redirectUrl = `${PUBLIC_SITE_URL.replace(/\/$/, "")}/bedankt?order=${preorder.id}`;
 
     const molliePayload = {
       amount: { currency: "EUR", value: amountStr },
