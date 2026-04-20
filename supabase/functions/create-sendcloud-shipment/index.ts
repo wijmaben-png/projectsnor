@@ -78,41 +78,47 @@ Deno.serve(async (req) => {
 
     const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
 
-    // Create parcel — uses default sender from Sendcloud account; request label automatically
-    const parcelPayload = {
-      parcel: {
+    // Sendcloud API v3: create shipment using account's shipping rules & defaults.
+    // The account's default sender address and shipping option are applied automatically.
+    const shipmentPayload = {
+      apply_shipping_defaults: true,
+      apply_shipping_rules: true,
+      order_number: preorder.id.slice(0, 8),
+      to_address: {
         name: `${preorder.first_name} ${preorder.last_name}`,
-        address: preorder.street,
-        city: preorder.city,
+        address_line_1: preorder.street,
         postal_code: preorder.postal_code,
-        country: "NL",
+        city: preorder.city,
+        country_code: "NL",
+        phone_number: preorder.phone,
         email: preorder.email,
-        telephone: preorder.phone,
-        weight: "0.250",
-        order_number: preorder.id.slice(0, 8),
-        request_label: true,
-        // Cheapest default — Sendcloud will pick based on default contract if shipping_method omitted with apply_shipping_rules
-        apply_shipping_rules: true,
       },
+      parcels: [
+        { weight: { value: "0.250", unit: "kg" } },
+      ],
     };
 
-    const scRes = await fetch("https://panel.sendcloud.sc/api/v2/parcels", {
-      method: "POST",
-      headers: { Authorization: auth, "Content-Type": "application/json" },
-      body: JSON.stringify(parcelPayload),
-    });
+    const scRes = await fetch(
+      "https://panel.sendcloud.sc/api/v3/shipments/create-with-shipping-rules",
+      {
+        method: "POST",
+        headers: { Authorization: auth, "Content-Type": "application/json" },
+        body: JSON.stringify(shipmentPayload),
+      },
+    );
     const scData = await scRes.json();
     if (!scRes.ok) {
-      console.error("Sendcloud error:", scData);
+      console.error("Sendcloud v3 error:", JSON.stringify(scData));
       return new Response(JSON.stringify({ error: "sendcloud_error", details: scData }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const parcel = scData.parcel;
-    const trackingNumber = parcel?.tracking_number ?? null;
-    const trackingUrl = parcel?.tracking_url ?? null;
-    const parcelId = String(parcel?.id ?? "");
+    const shipment = scData.data ?? scData;
+    const parcel = shipment.parcels?.[0] ?? {};
+    const trackingNumber = parcel.tracking_number || null;
+    const trackingUrl = parcel.tracking_url || null;
+    const parcelId = String(shipment.id ?? parcel.id ?? "");
 
     await admin.from("preorders").update({
       sendcloud_parcel_id: parcelId,
