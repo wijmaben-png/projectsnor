@@ -178,9 +178,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse v3 response
-    const shipments = scData.data ?? scData;
-    const shipment = Array.isArray(shipments) ? shipments[0] : shipments;
+    // Parse v3 response — single shipment object
+    const shipment = scData;
 
     const parcelId = String(shipment?.id ?? "");
     const trackingNumber = shipment?.tracking_number || null;
