@@ -272,14 +272,16 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={labelLoadingId === p.id}
+                          disabled={labelLoadingId === p.id || bulkLoading}
                           onClick={() => handleCreateLabel(p.id)}
                           className="border-foreground rounded-none uppercase text-[10px] tracking-wider"
                         >
                           {labelLoadingId === p.id ? "Bezig..." : "Verstuur label"}
                         </Button>
                       ) : p.sendcloud_parcel_id ? (
-                        <span className="text-xs text-muted-foreground">Verstuurd</span>
+                        <Badge className="bg-green-600 text-white border-green-600 rounded-none uppercase text-[10px] tracking-wider">
+                          ✓ Verstuurd
+                        </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
