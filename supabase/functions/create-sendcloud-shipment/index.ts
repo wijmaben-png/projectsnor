@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-    const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY");
-    const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY");
+    const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY")!;
+    const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY")!;
     const SENDCLOUD_SENDER_ADDRESS_ID = Deno.env.get("SENDCLOUD_SENDER_ADDRESS_ID");
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
@@ -30,6 +30,9 @@ Deno.serve(async (req) => {
     if (!SENDCLOUD_SENDER_ADDRESS_ID) {
       throw new Error("SENDCLOUD_SENDER_ADDRESS_ID env missing");
     }
+
+    const senderAddressId = Number(SENDCLOUD_SENDER_ADDRESS_ID);
+    const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
 
     // Verify caller is admin
     const authHeader = req.headers.get("Authorization") || "";
@@ -81,35 +84,69 @@ Deno.serve(async (req) => {
       });
     }
 
-    const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
+    // Step 1: Find the Brievenbuspakje+ 48u shipping option code
+    console.log("Fetching shipping options from Sendcloud v3...");
+    const optionsRes = await fetch(
+      "https://panel.sendcloud.sc/api/v3/shipping-options?from_country_code=nl&to_country_code=nl",
+      { headers: { "Authorization": auth, "Accept": "application/json" } }
+    );
+    const optionsJson = await optionsRes.json();
+    console.log("Shipping options response status:", optionsRes.status);
+    console.log("Shipping options count:", optionsJson.data?.length ?? 0);
 
-    // Sendcloud API v3: create shipment
+    if (!optionsRes.ok) {
+      console.error("Shipping options error:", JSON.stringify(optionsJson));
+      return new Response(JSON.stringify({ error: "shipping_options_error", details: optionsJson }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const option = optionsJson.data?.find((o: any) =>
+      (o.name || o.product?.name || "").toLowerCase().includes("brievenbuspakje+ 48u")
+    );
+
+    if (!option) {
+      // Log all available options for debugging
+      const names = (optionsJson.data || []).map((o: any) => o.name || o.product?.name || "unknown");
+      console.error("Available shipping options:", JSON.stringify(names));
+      return new Response(JSON.stringify({ error: "shipping_option_not_found", available: names }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const shippingCode = option.code;
+    console.log("Using shipping code:", shippingCode);
+
+    // Step 2: Create shipment with v3 payload
     const shipmentPayload = {
       shipments: [
         {
-          name: `${preorder.first_name} ${preorder.last_name}`,
-          company_name: "",
-          address_line_1: preorder.street,
-          house_number: "",
-          postal_code: preorder.postal_code,
-          city: preorder.city,
-          country_code: "NL",
-          email: preorder.email,
-          telephone: preorder.phone,
-          parcel_items: [
+          external_shipment_id: preorder.id,
+          external_order_id: preorder.id,
+          from_address: {
+            address_id: senderAddressId,
+          },
+          to_address: {
+            name: `${preorder.first_name} ${preorder.last_name}`,
+            company_name: "",
+            address_line_1: preorder.street || "",
+            house_number: "",
+            postal_code: (preorder.postal_code || "").replace(/\s/g, ""),
+            city: preorder.city || "",
+            country_code: "NL",
+            email: preorder.email,
+            phone_number: preorder.phone,
+          },
+          ship_with: {
+            type: "shipping_option_code",
+            properties: { shipping_option_code: shippingCode },
+          },
+          parcels: [
             {
-              description: "Project Snor T-shirt",
-              quantity: 1,
-              weight: "0.300",
-              value: "32.99",
-              hs_code: "6109",
-              origin_country: "NL",
+              weight: { value: "0.300", unit: "kg" },
+              dimensions: { length: "25", width: "20", height: "3", unit: "cm" },
             },
           ],
-          weight: "0.300",
-          sender_address_id: Number(SENDCLOUD_SENDER_ADDRESS_ID),
-          order_number: preorder.id,
-          external_reference: preorder.id,
         },
       ],
     };
@@ -133,7 +170,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse v3 response: data is an array of shipment objects
+    // Parse v3 response
     const shipments = scData.data ?? scData;
     const shipment = Array.isArray(shipments) ? shipments[0] : shipments;
 
