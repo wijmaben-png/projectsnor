@@ -83,46 +83,66 @@ Deno.serve(async (req) => {
 
     const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
 
-    // Sendcloud API v2: create parcel without label, let Sendcloud use preferred shipping defaults
-    const parcelPayload = {
-      parcel: {
-        name: `${preorder.first_name} ${preorder.last_name}`,
-        address: preorder.street,
-        city: preorder.city,
-        postal_code: preorder.postal_code,
-        country: "NL",
-        telephone: preorder.phone,
-        email: preorder.email,
-        order_number: preorder.id.slice(0, 8),
-        weight: "0.250",
-        sender_address: Number(SENDCLOUD_SENDER_ADDRESS_ID),
-        request_label: false,
-      },
+    // Sendcloud API v3: create shipment
+    const shipmentPayload = {
+      shipments: [
+        {
+          name: `${preorder.first_name} ${preorder.last_name}`,
+          company_name: "",
+          address_line_1: preorder.street,
+          house_number: "",
+          postal_code: preorder.postal_code,
+          city: preorder.city,
+          country_code: "NL",
+          email: preorder.email,
+          telephone: preorder.phone,
+          parcel_items: [
+            {
+              description: "Project Snor T-shirt",
+              quantity: 1,
+              weight: "0.300",
+              value: "32.99",
+              hs_code: "6109",
+              origin_country: "NL",
+            },
+          ],
+          weight: "0.300",
+          sender_address_id: Number(SENDCLOUD_SENDER_ADDRESS_ID),
+          order_number: preorder.id,
+          external_reference: preorder.id,
+        },
+      ],
     };
 
-    console.log("Sendcloud request payload:", JSON.stringify(parcelPayload, null, 2));
+    console.log("Sendcloud v3 request payload:", JSON.stringify(shipmentPayload, null, 2));
 
-    const scRes = await fetch("https://panel.sendcloud.sc/api/v2/parcels", {
+    const scRes = await fetch("https://panel.sendcloud.sc/api/v3/shipments", {
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json" },
-      body: JSON.stringify(parcelPayload),
+      body: JSON.stringify(shipmentPayload),
     });
 
     const scData = await scRes.json();
-    console.log("Sendcloud response status:", scRes.status);
-    console.log("Sendcloud response body:", JSON.stringify(scData, null, 2));
+    console.log("Sendcloud v3 response status:", scRes.status);
+    console.log("Sendcloud v3 response body:", JSON.stringify(scData, null, 2));
 
     if (!scRes.ok) {
-      console.error("Sendcloud error:", JSON.stringify(scData));
+      console.error("Sendcloud v3 error:", JSON.stringify(scData));
       return new Response(JSON.stringify({ error: "sendcloud_error", details: scData }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const parcel = scData.parcel ?? scData;
-    const parcelId = String(parcel.id ?? "");
-    const trackingNumber = parcel.tracking_number || null;
-    const trackingUrl = parcel.tracking_url || null;
+    // Parse v3 response: data is an array of shipment objects
+    const shipments = scData.data ?? scData;
+    const shipment = Array.isArray(shipments) ? shipments[0] : shipments;
+
+    const parcelId = String(shipment?.id ?? "");
+    const trackingNumber = shipment?.tracking_number || null;
+    const trackingUrl = shipment?.tracking_url || null;
+    const labelUrl = shipment?.label?.normal_printer || shipment?.label_url || null;
+
+    console.log("Parsed shipment:", { parcelId, trackingNumber, trackingUrl, labelUrl });
 
     await admin.from("preorders").update({
       sendcloud_parcel_id: parcelId,
@@ -161,7 +181,11 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      success: true, parcel_id: parcelId, tracking_number: trackingNumber, tracking_url: trackingUrl,
+      success: true,
+      parcel_id: parcelId,
+      tracking_number: trackingNumber,
+      tracking_url: trackingUrl,
+      label_url: labelUrl,
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
