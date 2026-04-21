@@ -19,11 +19,16 @@ Deno.serve(async (req) => {
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY");
     const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY");
+    const SENDCLOUD_SENDER_ADDRESS_ID = Deno.env.get("SENDCLOUD_SENDER_ADDRESS_ID");
+
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
       throw new Error("Supabase env missing");
     }
     if (!SENDCLOUD_PUBLIC_KEY || !SENDCLOUD_SECRET_KEY) {
       throw new Error("Sendcloud env missing");
+    }
+    if (!SENDCLOUD_SENDER_ADDRESS_ID) {
+      throw new Error("SENDCLOUD_SENDER_ADDRESS_ID env missing");
     }
 
     // Verify caller is admin
@@ -78,47 +83,46 @@ Deno.serve(async (req) => {
 
     const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
 
-    // Sendcloud API v3: create shipment using account's shipping rules & defaults.
-    // The account's default sender address and shipping option are applied automatically.
-    const shipmentPayload = {
-      apply_shipping_defaults: true,
-      apply_shipping_rules: true,
-      order_number: preorder.id.slice(0, 8),
-      to_address: {
+    // Sendcloud API v2: create parcel without label, let Sendcloud use preferred shipping defaults
+    const parcelPayload = {
+      parcel: {
         name: `${preorder.first_name} ${preorder.last_name}`,
-        address_line_1: preorder.street,
-        postal_code: preorder.postal_code,
+        address: preorder.street,
         city: preorder.city,
-        country_code: "NL",
-        phone_number: preorder.phone,
+        postal_code: preorder.postal_code,
+        country: "NL",
+        telephone: preorder.phone,
         email: preorder.email,
+        order_number: preorder.id.slice(0, 8),
+        weight: "0.250",
+        sender_address: Number(SENDCLOUD_SENDER_ADDRESS_ID),
+        request_label: false,
       },
-      parcels: [
-        { weight: { value: "0.250", unit: "kg" } },
-      ],
     };
 
-    const scRes = await fetch(
-      "https://panel.sendcloud.sc/api/v3/shipments/create-with-shipping-rules",
-      {
-        method: "POST",
-        headers: { Authorization: auth, "Content-Type": "application/json" },
-        body: JSON.stringify(shipmentPayload),
-      },
-    );
+    console.log("Sendcloud request payload:", JSON.stringify(parcelPayload, null, 2));
+
+    const scRes = await fetch("https://panel.sendcloud.sc/api/v2/parcels", {
+      method: "POST",
+      headers: { Authorization: auth, "Content-Type": "application/json" },
+      body: JSON.stringify(parcelPayload),
+    });
+
     const scData = await scRes.json();
+    console.log("Sendcloud response status:", scRes.status);
+    console.log("Sendcloud response body:", JSON.stringify(scData, null, 2));
+
     if (!scRes.ok) {
-      console.error("Sendcloud v3 error:", JSON.stringify(scData));
+      console.error("Sendcloud error:", JSON.stringify(scData));
       return new Response(JSON.stringify({ error: "sendcloud_error", details: scData }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const shipment = scData.data ?? scData;
-    const parcel = shipment.parcels?.[0] ?? {};
+    const parcel = scData.parcel ?? scData;
+    const parcelId = String(parcel.id ?? "");
     const trackingNumber = parcel.tracking_number || null;
     const trackingUrl = parcel.tracking_url || null;
-    const parcelId = String(shipment.id ?? parcel.id ?? "");
 
     await admin.from("preorders").update({
       sendcloud_parcel_id: parcelId,
