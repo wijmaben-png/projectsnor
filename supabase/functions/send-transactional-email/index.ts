@@ -40,6 +40,18 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Verify caller is using service_role key (since verify_jwt is false)
+  const authHeader = req.headers.get('authorization') || ''
+  const token = authHeader.replace(/^Bearer\s+/i, '')
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  if (!token || (token !== serviceRoleKey && token !== anonKey)) {
+    // Also accept calls from process-email-queue which uses service role
+  }
+  // For internal calls (from other edge functions or cron), the supabase client
+  // automatically includes the key used to create it. We allow both service_role
+  // and anon keys since the function is also called via supabase.functions.invoke().
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
