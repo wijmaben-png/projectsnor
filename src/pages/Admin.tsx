@@ -116,6 +116,10 @@ const Admin = () => {
       toast({ title: "Geen openstaande labels", description: "Alle betaalde verzendingen hebben al een label." });
       return;
     }
+    const confirmed = window.confirm(
+      `Weet je zeker dat je ${pending.length} label(s) wilt aanmaken? Dit kan niet ongedaan worden.`
+    );
+    if (!confirmed) return;
     setBulkLoading(true);
     let success = 0;
     let fail = 0;
