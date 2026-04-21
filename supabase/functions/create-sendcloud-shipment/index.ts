@@ -135,15 +135,6 @@ Deno.serve(async (req) => {
       external_order_id: preorder.id,
       from_address: {
         sender_address_id: senderAddressId,
-        name: "Wijma Media",
-        company_name: "Wijma Media",
-        address_line_1: "Agniesestraat",
-        house_number: "115 A 01",
-        postal_code: "3032TH",
-        city: "Rotterdam",
-        country_code: "NL",
-        email: "wijmaben@gmail.com",
-        phone_number: "+31651264180",
       },
       to_address: {
         name: `${preorder.first_name} ${preorder.last_name}`,
