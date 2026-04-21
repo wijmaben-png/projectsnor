@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -43,7 +44,7 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
-
+  const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
     const { data, error } = await supabase
       .from("preorders")
@@ -106,6 +107,42 @@ const Admin = () => {
       setLabelLoadingId(null);
     }
   };
+
+  const handleBulkLabels = async () => {
+    const pending = filtered.filter(
+      (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
+    );
+    if (pending.length === 0) {
+      toast({ title: "Geen openstaande labels", description: "Alle betaalde verzendingen hebben al een label." });
+      return;
+    }
+    setBulkLoading(true);
+    let success = 0;
+    let fail = 0;
+    for (const p of pending) {
+      try {
+        const { data, error } = await supabase.functions.invoke("create-sendcloud-shipment", {
+          body: { preorder_id: p.id },
+        });
+        if (error) throw new Error(error.message);
+        if (data?.error) throw new Error(data.error);
+        success++;
+      } catch {
+        fail++;
+      }
+    }
+    toast({
+      title: "Bulk labels klaar",
+      description: `${success} gelukt, ${fail} mislukt`,
+      variant: fail > 0 ? "destructive" : "default",
+    });
+    await load();
+    setBulkLoading(false);
+  };
+
+  const pendingLabelCount = preorders.filter(
+    (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
+  ).length;
 
   const filtered = preorders.filter((p) =>
     filter === "all" ? true : p.delivery_method === filter
@@ -172,6 +209,10 @@ const Admin = () => {
             {filterBtn("Alle", "all")}
             {filterBtn("Ophalen", "pickup")}
             {filterBtn("Verzenden", "shipping")}
+            <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
+              className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
+              {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
+            </Button>
             <Button onClick={handleExport} variant="outline"
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               Download CSV
@@ -231,14 +272,16 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={labelLoadingId === p.id}
+                          disabled={labelLoadingId === p.id || bulkLoading}
                           onClick={() => handleCreateLabel(p.id)}
                           className="border-foreground rounded-none uppercase text-[10px] tracking-wider"
                         >
                           {labelLoadingId === p.id ? "Bezig..." : "Verstuur label"}
                         </Button>
                       ) : p.sendcloud_parcel_id ? (
-                        <span className="text-xs text-muted-foreground">Verstuurd</span>
+                        <Badge className="bg-green-600 text-white border-green-600 rounded-none uppercase text-[10px] tracking-wider">
+                          ✓ Verstuurd
+                        </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
