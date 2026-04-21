@@ -209,6 +209,10 @@ const Admin = () => {
             {filterBtn("Alle", "all")}
             {filterBtn("Ophalen", "pickup")}
             {filterBtn("Verzenden", "shipping")}
+            <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
+              className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
+              {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
+            </Button>
             <Button onClick={handleExport} variant="outline"
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               Download CSV
