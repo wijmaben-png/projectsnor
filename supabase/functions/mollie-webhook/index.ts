@@ -80,21 +80,22 @@ Deno.serve(async (req) => {
     // On first paid transition, send confirmation email
     if (dbStatus === "paid" && !wasPaid) {
       try {
-        const INTERNAL_FUNCTION_SECRET = Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "";
-        await supabase.functions.invoke("send-preorder-confirmation", {
-          headers: { "x-internal-secret": INTERNAL_FUNCTION_SECRET },
+        await supabase.functions.invoke("send-transactional-email", {
           body: {
-            preorder_id: row.id,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            email: row.email,
-            tshirt_size: row.tshirt_size,
-            tshirt_color: row.tshirt_color,
-            delivery_method: row.delivery_method,
-            amount_paid: row.amount_paid,
-            street: row.street,
-            postal_code: row.postal_code,
-            city: row.city,
+            templateName: "order-confirmation",
+            recipientEmail: row.email,
+            idempotencyKey: `order-confirm-${row.id}`,
+            templateData: {
+              first_name: row.first_name,
+              last_name: row.last_name,
+              tshirt_size: row.tshirt_size,
+              tshirt_color: row.tshirt_color,
+              delivery_method: row.delivery_method,
+              amount_paid: row.amount_paid,
+              street: row.street,
+              postal_code: row.postal_code,
+              city: row.city,
+            },
           },
         });
       } catch (e) {
