@@ -44,7 +44,7 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
-
+  const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
     const { data, error } = await supabase
       .from("preorders")
