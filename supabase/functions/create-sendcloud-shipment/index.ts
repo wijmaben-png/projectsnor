@@ -84,29 +84,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Step 1: Find the Brievenbuspakje+ 48u shipping option code
+    // Step 1: Find the Brievenbuspakje+ 48u shipping option code via POST
     console.log("Fetching shipping options from Sendcloud v3...");
     const optionsRes = await fetch(
-      "https://panel.sendcloud.sc/api/v3/shipping-options?from_country_code=nl&to_country_code=nl",
-      { headers: { "Authorization": auth, "Accept": "application/json" } }
+      "https://panel.sendcloud.sc/api/v3/fetch-shipping-options",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": auth,
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from_address: { country_code: "NL" },
+          to_address: { country_code: "NL" },
+          parcels: [{ weight: { value: "0.300", unit: "kg" } }],
+        }),
+      }
     );
-    const optionsJson = await optionsRes.json();
-    console.log("Shipping options response status:", optionsRes.status);
-    console.log("Shipping options count:", optionsJson.data?.length ?? 0);
 
     if (!optionsRes.ok) {
-      console.error("Shipping options error:", JSON.stringify(optionsJson));
-      return new Response(JSON.stringify({ error: "shipping_options_error", details: optionsJson }), {
+      const errText = await optionsRes.text();
+      console.error("Shipping options error:", optionsRes.status, errText);
+      return new Response(JSON.stringify({ error: "shipping_options_error", status: optionsRes.status, details: errText }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const optionsJson = await optionsRes.json();
+    console.log("Available options:", JSON.stringify(optionsJson).slice(0, 2000));
 
     const option = optionsJson.data?.find((o: any) =>
       (o.name || o.product?.name || "").toLowerCase().includes("brievenbuspakje+ 48u")
     );
 
     if (!option) {
-      // Log all available options for debugging
       const names = (optionsJson.data || []).map((o: any) => o.name || o.product?.name || "unknown");
       console.error("Available shipping options:", JSON.stringify(names));
       return new Response(JSON.stringify({ error: "shipping_option_not_found", available: names }), {
