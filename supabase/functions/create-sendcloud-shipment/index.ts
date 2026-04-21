@@ -129,36 +129,32 @@ Deno.serve(async (req) => {
     const shippingCode = option.code;
     console.log("Using shipping code:", shippingCode);
 
-    // Step 2: Create shipment with v3 payload
+    // Step 2: Create shipment with v3 payload (root-level, no wrapping array)
     const shipmentPayload = {
-      shipments: [
+      external_shipment_id: preorder.id,
+      external_order_id: preorder.id,
+      from_address: {
+        address_id: senderAddressId,
+      },
+      to_address: {
+        name: `${preorder.first_name} ${preorder.last_name}`,
+        company_name: "",
+        address_line_1: preorder.street || "",
+        house_number: "",
+        postal_code: (preorder.postal_code || "").replace(/\s/g, ""),
+        city: preorder.city || "",
+        country_code: "NL",
+        email: preorder.email,
+        phone_number: preorder.phone,
+      },
+      ship_with: {
+        type: "shipping_option_code",
+        properties: { shipping_option_code: shippingCode },
+      },
+      parcels: [
         {
-          external_shipment_id: preorder.id,
-          external_order_id: preorder.id,
-          from_address: {
-            address_id: senderAddressId,
-          },
-          to_address: {
-            name: `${preorder.first_name} ${preorder.last_name}`,
-            company_name: "",
-            address_line_1: preorder.street || "",
-            house_number: "",
-            postal_code: (preorder.postal_code || "").replace(/\s/g, ""),
-            city: preorder.city || "",
-            country_code: "NL",
-            email: preorder.email,
-            phone_number: preorder.phone,
-          },
-          ship_with: {
-            type: "shipping_option_code",
-            properties: { shipping_option_code: shippingCode },
-          },
-          parcels: [
-            {
-              weight: { value: "0.300", unit: "kg" },
-              dimensions: { length: "25", width: "20", height: "3", unit: "cm" },
-            },
-          ],
+          weight: { value: "0.300", unit: "kg" },
+          dimensions: { length: "25", width: "20", height: "3", unit: "cm" },
         },
       ],
     };
