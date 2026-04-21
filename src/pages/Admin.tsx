@@ -108,6 +108,42 @@ const Admin = () => {
     }
   };
 
+  const handleBulkLabels = async () => {
+    const pending = filtered.filter(
+      (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
+    );
+    if (pending.length === 0) {
+      toast({ title: "Geen openstaande labels", description: "Alle betaalde verzendingen hebben al een label." });
+      return;
+    }
+    setBulkLoading(true);
+    let success = 0;
+    let fail = 0;
+    for (const p of pending) {
+      try {
+        const { data, error } = await supabase.functions.invoke("create-sendcloud-shipment", {
+          body: { preorder_id: p.id },
+        });
+        if (error) throw new Error(error.message);
+        if (data?.error) throw new Error(data.error);
+        success++;
+      } catch {
+        fail++;
+      }
+    }
+    toast({
+      title: "Bulk labels klaar",
+      description: `${success} gelukt, ${fail} mislukt`,
+      variant: fail > 0 ? "destructive" : "default",
+    });
+    await load();
+    setBulkLoading(false);
+  };
+
+  const pendingLabelCount = preorders.filter(
+    (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
+  ).length;
+
   const filtered = preorders.filter((p) =>
     filter === "all" ? true : p.delivery_method === filter
   );
