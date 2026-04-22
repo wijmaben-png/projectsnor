@@ -29,20 +29,17 @@ const Bedankt = () => {
     }
     let cancelled = false;
     (async () => {
-      // Poll for webhook confirmation
+      // Poll for webhook confirmation using secure RPC function
       for (let i = 0; i < 8; i++) {
-        const { data } = await supabase
-          .from("preorders")
-          .select("first_name, tshirt_size, tshirt_color, delivery_method, amount_paid, payment_status, street, postal_code, city")
-          .eq("id", orderId)
-          .maybeSingle();
+        const { data } = await supabase.rpc("get_preorder_by_id", { _order_id: orderId });
+        const row = Array.isArray(data) ? data[0] : data;
         if (cancelled) return;
-        if (data?.payment_status === "paid") {
-          setOrder(data as Order);
+        if (row?.payment_status === "paid") {
+          setOrder(row as Order);
           break;
         }
-        if (data && ["failed", "canceled", "expired"].includes(data.payment_status)) {
-          setOrder(data as Order);
+        if (row && ["failed", "canceled", "expired"].includes(row.payment_status)) {
+          setOrder(row as Order);
           break;
         }
         await new Promise((r) => setTimeout(r, 1500));
