@@ -15,19 +15,16 @@ const Index = () => {
     if (!orderId) return;
     let cancelled = false;
     (async () => {
-      // Poll a few times for the webhook
+      // Poll a few times for the webhook using secure RPC
       for (let i = 0; i < 6; i++) {
-        const { data } = await supabase
-          .from("preorders")
-          .select("payment_status")
-          .eq("id", orderId)
-          .maybeSingle();
+        const { data } = await supabase.rpc("get_preorder_by_id", { _order_id: orderId });
+        const row = Array.isArray(data) ? data[0] : data;
         if (cancelled) return;
-        if (data?.payment_status === "paid") {
+        if (row?.payment_status === "paid") {
           setBanner({ kind: "success", text: "Bedankt voor je bestelling! Je ontvangt een bevestiging per e-mail." });
           break;
         }
-        if (data?.payment_status === "failed" || data?.payment_status === "canceled" || data?.payment_status === "expired") {
+        if (row?.payment_status === "failed" || row?.payment_status === "canceled" || row?.payment_status === "expired") {
           setBanner({ kind: "error", text: "Je betaling is niet gelukt. Probeer het opnieuw." });
           break;
         }
