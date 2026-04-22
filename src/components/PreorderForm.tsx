@@ -73,7 +73,7 @@ export const PreorderForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Set<FieldKey>>(new Set());
   const [showError, setShowError] = useState(false);
-  const [discountStatus, setDiscountStatus] = useState<"none" | "valid" | "invalid">("none");
+  const [discountStatus, setDiscountStatus] = useState<"none" | "checking" | "valid" | "invalid">("none");
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
 
@@ -205,10 +205,19 @@ export const PreorderForm = () => {
   const handleApplyDiscount = async () => {
     const code = form.discount_code.trim();
     if (!code) return;
-    // Provisionally validate by calling the same endpoint won't work without full data;
-    // we just mark as "pending" — real validation happens server-side at submit.
-    // For UX we optimistically show "ingevoerd"; server is source of truth.
-    setDiscountStatus("valid");
+    setDiscountStatus("checking");
+    try {
+      const { data, error } = await supabase.functions.invoke("validate-discount", {
+        body: { discount_code: code },
+      });
+      if (error || !data?.valid) {
+        setDiscountStatus("invalid");
+      } else {
+        setDiscountStatus("valid");
+      }
+    } catch {
+      setDiscountStatus("invalid");
+    }
   };
 
   const inputClass = (key: FieldKey) =>
@@ -293,6 +302,9 @@ export const PreorderForm = () => {
             Toepassen
           </Button>
         </div>
+        {discountStatus === "checking" && (
+          <p className="text-sm text-muted-foreground">Controleren...</p>
+        )}
         {discountStatus === "valid" && form.discount_code.trim() && (
           <p className="text-sm font-medium border border-foreground bg-foreground text-background px-3 py-2">
             Kortingscode toegepast! Je betaalt €29,99.
