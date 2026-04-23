@@ -44,6 +44,7 @@ const Admin = () => {
   const [preorders, setPreorders] = useState<Preorder[]>([]);
   const [authorized, setAuthorized] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [colorFilter, setColorFilter] = useState<ColorFilter>("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
