@@ -201,6 +201,20 @@ const Admin = () => {
     </Button>
   );
 
+  const colorBtn = (label: string, value: ColorFilter) => (
+    <Button
+      key={value}
+      variant="outline"
+      onClick={() => setColorFilter(value)}
+      className={cn(
+        "border-foreground rounded-none uppercase text-xs tracking-wider",
+        colorFilter === value ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background",
+      )}
+    >
+      {label}
+    </Button>
+  );
+
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="max-w-[100rem] mx-auto">
