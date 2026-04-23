@@ -35,6 +35,7 @@ type Preorder = {
 };
 
 type Filter = "all" | "pickup" | "shipping";
+type ColorFilter = "all" | "black" | "white";
 
 const Admin = () => {
   const navigate = useNavigate();
