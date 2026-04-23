@@ -35,6 +35,7 @@ type Preorder = {
 };
 
 type Filter = "all" | "pickup" | "shipping";
+type ColorFilter = "all" | "black" | "white";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const Admin = () => {
   const [preorders, setPreorders] = useState<Preorder[]>([]);
   const [authorized, setAuthorized] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [colorFilter, setColorFilter] = useState<ColorFilter>("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
@@ -148,9 +150,9 @@ const Admin = () => {
     (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
   ).length;
 
-  const filtered = preorders.filter((p) =>
-    filter === "all" ? true : p.delivery_method === filter
-  );
+  const filtered = preorders
+    .filter((p) => filter === "all" ? true : p.delivery_method === filter)
+    .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter);
 
   const handleExport = () => {
     const headers = ["Datum","Voornaam","Achternaam","E-mail","Telefoon","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Bedrag","Korting","Tracking"];
@@ -199,6 +201,20 @@ const Admin = () => {
     </Button>
   );
 
+  const colorBtn = (label: string, value: ColorFilter) => (
+    <Button
+      key={value}
+      variant="outline"
+      onClick={() => setColorFilter(value)}
+      className={cn(
+        "border-foreground rounded-none uppercase text-xs tracking-wider",
+        colorFilter === value ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background",
+      )}
+    >
+      {label}
+    </Button>
+  );
+
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="max-w-[100rem] mx-auto">
@@ -213,6 +229,10 @@ const Admin = () => {
             {filterBtn("Alle", "all")}
             {filterBtn("Ophalen", "pickup")}
             {filterBtn("Verzenden", "shipping")}
+            <span className="w-px h-8 bg-foreground/30" />
+            {colorBtn("Alle kleuren", "all")}
+            {colorBtn("Zwart", "black")}
+            {colorBtn("Wit", "white")}
             <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
