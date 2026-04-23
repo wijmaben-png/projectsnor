@@ -150,9 +150,9 @@ const Admin = () => {
     (p) => p.delivery_method === "shipping" && p.payment_status === "paid" && !p.sendcloud_parcel_id
   ).length;
 
-  const filtered = preorders.filter((p) =>
-    filter === "all" ? true : p.delivery_method === filter
-  );
+  const filtered = preorders
+    .filter((p) => filter === "all" ? true : p.delivery_method === filter)
+    .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter);
 
   const handleExport = () => {
     const headers = ["Datum","Voornaam","Achternaam","E-mail","Telefoon","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Bedrag","Korting","Tracking"];
