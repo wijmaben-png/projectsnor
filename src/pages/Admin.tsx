@@ -229,7 +229,10 @@ const Admin = () => {
             {filterBtn("Alle", "all")}
             {filterBtn("Ophalen", "pickup")}
             {filterBtn("Verzenden", "shipping")}
-            <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
+            <span className="w-px h-8 bg-foreground/30" />
+            {colorBtn("Alle kleuren", "all")}
+            {colorBtn("Zwart", "black")}
+            {colorBtn("Wit", "white")}
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
             </Button>
