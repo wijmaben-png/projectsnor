@@ -151,6 +151,7 @@ const Admin = () => {
   ).length;
 
   const filtered = preorders
+    .filter((p) => p.payment_status !== "expired" && p.payment_status !== "failed" && p.payment_status !== "canceled")
     .filter((p) => filter === "all" ? true : p.delivery_method === filter)
     .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter);
 
