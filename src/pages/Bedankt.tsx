@@ -11,9 +11,6 @@ interface Order {
   delivery_method: string;
   amount_paid: number | null;
   payment_status: string;
-  street: string | null;
-  postal_code: string | null;
-  city: string | null;
 }
 
 const Bedankt = () => {
