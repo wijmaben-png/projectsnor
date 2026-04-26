@@ -93,12 +93,6 @@ const Bedankt = () => {
                 <li><span className="uppercase tracking-wide text-muted-foreground">Maat:</span> <strong>{order.tshirt_size}</strong></li>
                 <li><span className="uppercase tracking-wide text-muted-foreground">Kleur:</span> <strong>{colorLabel}</strong></li>
                 <li><span className="uppercase tracking-wide text-muted-foreground">Bezorging:</span> <strong>{deliveryLabel}</strong></li>
-                {order.delivery_method === "shipping" && order.street && (
-                  <li>
-                    <span className="uppercase tracking-wide text-muted-foreground">Adres:</span>{" "}
-                    <strong>{order.street}, {order.postal_code} {order.city}</strong>
-                  </li>
-                )}
                 <li>
                   <span className="uppercase tracking-wide text-muted-foreground">Betaald:</span>{" "}
                   <strong>{typeof order.amount_paid === "number" ? `€${order.amount_paid.toFixed(2)}` : "—"}</strong>
