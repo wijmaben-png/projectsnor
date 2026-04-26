@@ -235,12 +235,9 @@ export type Database = {
         Args: { _order_id: string }
         Returns: {
           amount_paid: number
-          city: string
           delivery_method: string
           first_name: string
           payment_status: string
-          postal_code: string
-          street: string
           tshirt_color: string
           tshirt_size: string
         }[]

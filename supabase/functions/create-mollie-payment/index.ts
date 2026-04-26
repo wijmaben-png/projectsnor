@@ -146,17 +146,9 @@ Deno.serve(async (req) => {
     const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\./)?.[1];
     const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/mollie-webhook`;
 
-    // Prefer the Origin of the request (whichever domain the user came from)
-    // and fall back to PUBLIC_SITE_URL. This prevents wrong-domain redirects.
-    const originHeader = req.headers.get("origin") || req.headers.get("referer") || "";
-    let baseUrl = PUBLIC_SITE_URL;
-    try {
-      if (originHeader) {
-        const u = new URL(originHeader);
-        baseUrl = `${u.protocol}//${u.host}`;
-      }
-    } catch { /* ignore */ }
-    const redirectUrl = `${baseUrl.replace(/\/$/, "")}/bedankt?order=${preorder.id}`;
+    // Always use the trusted PUBLIC_SITE_URL to prevent open-redirect abuse
+    // via attacker-controlled Origin/Referer headers.
+    const redirectUrl = `${PUBLIC_SITE_URL.replace(/\/$/, "")}/bedankt?order=${preorder.id}`;
     console.log("Mollie redirect URL:", redirectUrl);
 
     const molliePayload = {
