@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { PreorderForm } from "@/components/PreorderForm";
 import { PixelImage } from "@/components/PixelImage";
 import { ShirtPreview } from "@/components/ShirtPreview";
-import { supabase } from "@/integrations/supabase/client";
 import portrait from "@/assets/project-snor-portrait.png";
 
-const Index = () => {
   const [params, setParams] = useSearchParams();
   const [banner, setBanner] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
