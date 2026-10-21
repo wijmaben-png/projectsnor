@@ -5,16 +5,16 @@ import whiteFront from "@/assets/shirt-white-front.png";
 import whiteBack from "@/assets/shirt-white-back.png";
 import longsleeveWhiteFront from "@/assets/longsleeve-white-front.png.asset.json";
 import longsleeveWhiteBack from "@/assets/longsleeve-white-back.png.asset.json";
-import longsleeveBlackFront from "@/assets/longsleeve-black-front.jpeg.asset.json";
-import longsleeveBlackBack from "@/assets/longsleeve-black-back.jpeg.asset.json";
+import longsleeveBlackFront from "@/assets/longsleeve-black-front-correct.png.asset.json";
+import longsleeveBlackBack from "@/assets/longsleeve-black-back-correct.png.asset.json";
 import capFront from "@/assets/cap-front.png.asset.json";
 import capSide from "@/assets/cap-side.png.asset.json";
 
 const SHIRTS = [
   { color: "black", label: "Zwart", front: blackFront, back: blackBack },
   { color: "white", label: "Wit", front: whiteFront, back: whiteBack },
-  { color: "longsleeve-white", label: "Longsleeve - Wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url },
-  { color: "longsleeve-black", label: "Longsleeve - Zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url },
+  { color: "longsleeve-white", label: "Snorrig hart - wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url },
+  { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url },
   { color: "cap", label: "Pet", front: capFront.url, back: capSide.url },
 ] as const;
 
@@ -63,7 +63,7 @@ export const ShirtPreview = () => {
               <img
                 src={s.front}
                     alt={`${s.label}${s.color === "black" || s.color === "white" ? " shirt" : ""} voorkant`}
-                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${
+                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${s.color.startsWith("longsleeve-") ? "scale-[1.32]" : ""} ${
                   isBack ? "opacity-0" : "opacity-100"
                 }`}
                 loading="lazy"
@@ -72,7 +72,7 @@ export const ShirtPreview = () => {
               <img
                 src={s.back}
                     alt={`${s.label}${s.color === "black" || s.color === "white" ? " shirt" : ""} ${s.color === "cap" ? "zijkant" : "achterkant"}`}
-                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${
+                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${s.color.startsWith("longsleeve-") ? "scale-[1.32]" : ""} ${
                   isBack ? "opacity-100" : "opacity-0"
                 }`}
                 loading="lazy"
