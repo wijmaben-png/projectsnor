@@ -25,27 +25,21 @@ const Index = () => {
         </div>
 
         <h2 className="mt-10 font-title text-4xl md:text-5xl text-center">
-          Voorverkoop gesloten
+          Drop 2, nu live
         </h2>
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Bedankt voor alle bestellingen! De voorverkoop van de Project Snor
-          shirts is gesloten. Het is niet meer mogelijk om een shirt te
-          bestellen.
+          Er is geluisterd — dankjulliewel voor de stemmen. Onze tweede merch
+          drop ooit is binnen: twee verse longsleeves en een pet die om je kop
+          smeekt.
         </p>
 
         <p className="mt-3 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Bij elke verkochte shirt is €1 gedoneerd aan de
-          {" "}
-          <a
-            href="https://nl.movember.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-display italic underline underline-offset-4 hover:text-foreground transition-colors"
-          >
-            Movember Foundation
-          </a>
-          .
+          Beperkte oplage, dus wees er snor bij.
+        </p>
+
+        <p className="mt-3 text-sm md:text-base text-center max-w-md font-bold">
+          Koop je merch en zie er extra snorrig uit.
         </p>
 
         <div className="mt-8 flex justify-center w-full">
