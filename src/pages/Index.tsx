@@ -30,16 +30,12 @@ const Index = () => {
 
         <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
           Er is geluisterd — dankjulliewel voor de stemmen. Onze tweede merch
-          drop ooit is binnen: twee verse longsleeves en een pet die om je kop
-          smeekt.
+          drop ooit is binnen: twee verse longsleeves en een pet die je snor
+          er nog strakker uit laat zien.
         </p>
 
         <p className="mt-3 text-sm md:text-base text-center max-w-md text-muted-foreground">
           Beperkte oplage, dus wees er snor bij.
-        </p>
-
-        <p className="mt-3 text-sm md:text-base text-center max-w-md font-bold">
-          Koop je merch en zie er extra snorrig uit.
         </p>
 
         <div className="mt-8 flex justify-center w-full">
