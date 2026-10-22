@@ -6,16 +6,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PRICE_DEFAULT = 32.99;
-const PRICE_DISCOUNTED = 29.99;
+const PRICES: Record<string, number> = {
+  shirt: 32.99,
+  longsleeve: 39.99,
+  cap: 34.99,
+};
+const DISCOUNT_AMOUNT = 3.0;
+
+const PRODUCT_LABELS: Record<string, string> = {
+  shirt: "t-shirt",
+  longsleeve: "longsleeve",
+  cap: "pet",
+};
 
 const BodySchema = z.object({
   first_name: z.string().trim().min(1).max(100),
   last_name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   phone: z.string().trim().min(6).max(30),
-  tshirt_size: z.enum(["S", "M", "L", "XL"]),
-  tshirt_color: z.enum(["black", "white"]),
+  product_type: z.enum(["shirt", "longsleeve", "cap"]),
+  tshirt_size: z.enum(["S", "M", "L", "XL", "ONE"]),
+  tshirt_color: z.enum(["black", "white", "none"]),
   delivery_method: z.enum(["pickup", "shipping"]),
   street: z.string().trim().max(200).optional().nullable(),
   postal_code: z.string().trim().max(20).optional().nullable(),
@@ -46,6 +57,20 @@ Deno.serve(async (req) => {
     }
     const data = parsed.data;
 
+    if (data.product_type === "cap") {
+      if (data.tshirt_size !== "ONE" || data.tshirt_color !== "none") {
+        return new Response(
+          JSON.stringify({ error: "Invalid size/color for cap" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else if (data.tshirt_size === "ONE" || data.tshirt_color === "none") {
+      return new Response(
+        JSON.stringify({ error: "Invalid size/color for product" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (data.delivery_method === "shipping") {
       if (!data.street || !data.postal_code || !data.city) {
         return new Response(
@@ -68,7 +93,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    const shirtPrice = discountValid ? PRICE_DISCOUNTED : PRICE_DEFAULT;
+    const basePrice = PRICES[data.product_type];
+    const productPrice = discountValid
+      ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
+      : basePrice;
 
     // Fetch live shipping cost from Sendcloud when shipping
     let shippingCost = 0;

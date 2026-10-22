@@ -1,5 +1,6 @@
 import { PixelImage } from "@/components/PixelImage";
 import { ShirtPreview } from "@/components/ShirtPreview";
+import { PreorderForm } from "@/components/PreorderForm";
 import portrait from "@/assets/project-snor-portrait.png";
 
 const Index = () => {
@@ -43,12 +44,9 @@ const Index = () => {
         </div>
       </section>
 
-      <div
-        role="status"
-        className="w-full max-w-md mt-10 mb-16 border border-foreground px-4 py-3 text-sm font-bold uppercase tracking-wide text-center bg-foreground text-background"
-      >
-        Bestellen niet meer mogelijk
-      </div>
+      <section className="w-full max-w-md mt-10 mb-16">
+        <PreorderForm />
+      </section>
 
       <footer className="mt-auto pt-8 text-xs uppercase tracking-widest text-muted-foreground">
         © Project Snor
