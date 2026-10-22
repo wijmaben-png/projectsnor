@@ -117,6 +117,7 @@ export type Database = {
           payment_status: string
           phone: string
           postal_code: string | null
+          product_type: string
           sendcloud_parcel_id: string | null
           shipping_cost: number | null
           street: string | null
@@ -140,6 +141,7 @@ export type Database = {
           payment_status?: string
           phone: string
           postal_code?: string | null
+          product_type?: string
           sendcloud_parcel_id?: string | null
           shipping_cost?: number | null
           street?: string | null
@@ -163,6 +165,7 @@ export type Database = {
           payment_status?: string
           phone?: string
           postal_code?: string | null
+          product_type?: string
           sendcloud_parcel_id?: string | null
           shipping_cost?: number | null
           street?: string | null
@@ -239,6 +242,7 @@ export type Database = {
           delivery_method: string
           first_name: string
           payment_status: string
+          product_type: string
           tshirt_color: string
           tshirt_size: string
         }[]
