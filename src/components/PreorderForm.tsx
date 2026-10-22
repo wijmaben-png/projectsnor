@@ -21,6 +21,15 @@ type Size = (typeof SIZES)[number];
 const COLORS = ["black", "white"] as const;
 type Color = (typeof COLORS)[number];
 
+const PRODUCTS = [
+  { id: "shirt", label: "Shirt", price: 32.99 },
+  { id: "longsleeve", label: "Longsleeve (Snorrig hart)", price: 39.99 },
+  { id: "cap", label: "Pet", price: 34.99 },
+] as const;
+type Product = (typeof PRODUCTS)[number]["id"];
+
+const DISCOUNT_AMOUNT = 3.0;
+
 type Delivery = "pickup" | "shipping";
 
 const baseSchema = z.object({
@@ -28,6 +37,7 @@ const baseSchema = z.object({
   last_name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   phone: z.string().trim().min(6).max(20).regex(/^[+\d\s()-]+$/),
+  product_type: z.enum(["shirt", "longsleeve", "cap"]),
   tshirt_size: z.enum(SIZES),
   tshirt_color: z.enum(COLORS),
   delivery_method: z.enum(["pickup", "shipping"]),
@@ -42,6 +52,7 @@ type FormState = {
   last_name: string;
   email: string;
   phone: string;
+  product_type: "" | Product;
   tshirt_size: "" | Size;
   tshirt_color: "" | Color;
   delivery_method: "" | Delivery;
@@ -56,6 +67,7 @@ const initialState: FormState = {
   last_name: "",
   email: "",
   phone: "",
+  product_type: "",
   tshirt_size: "",
   tshirt_color: "",
   delivery_method: "",
@@ -76,6 +88,8 @@ export const PreorderForm = () => {
   const [discountStatus, setDiscountStatus] = useState<"none" | "checking" | "valid" | "invalid">("none");
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
+
+  const isCap = form.product_type === "cap";
 
   // Fetch live shipping cost from Sendcloud when "shipping" is selected
   useEffect(() => {
@@ -101,9 +115,13 @@ export const PreorderForm = () => {
     return () => { cancelled = true; };
   }, [form.delivery_method]);
 
-  const shirtPrice = discountStatus === "valid" && form.discount_code.trim() ? 29.99 : 32.99;
+  const product = PRODUCTS.find((p) => p.id === form.product_type);
+  const basePrice = product?.price ?? 0;
+  const productPrice = discountStatus === "valid" && form.discount_code.trim()
+    ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
+    : basePrice;
   const effectiveShipping = form.delivery_method === "shipping" ? (shippingCost ?? 0) : 0;
-  const orderTotal = Math.round((shirtPrice + effectiveShipping) * 100) / 100;
+  const orderTotal = Math.round((productPrice + effectiveShipping) * 100) / 100;
   const fmt = (n: number) =>
     n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -120,8 +138,9 @@ export const PreorderForm = () => {
 
   const requiredFields = (): FieldKey[] => {
     const base: FieldKey[] = [
-      "first_name", "last_name", "email", "phone", "tshirt_size", "tshirt_color", "delivery_method",
+      "first_name", "last_name", "email", "phone", "product_type", "delivery_method",
     ];
+    if (!isCap) base.push("tshirt_size", "tshirt_color");
     if (form.delivery_method === "shipping") {
       base.push("street", "postal_code", "city");
     }
@@ -141,7 +160,17 @@ export const PreorderForm = () => {
       return;
     }
 
-    const parsed = baseSchema.safeParse(form);
+    const payload = {
+      ...form,
+      tshirt_size: isCap ? "ONE" : form.tshirt_size,
+      tshirt_color: isCap ? "none" : form.tshirt_color,
+    };
+
+    const parsed = baseSchema.safeParse({
+      ...payload,
+      tshirt_size: isCap ? "S" : payload.tshirt_size,
+      tshirt_color: isCap ? "black" : payload.tshirt_color,
+    });
     if (!parsed.success) {
       const invalid = new Set<FieldKey>();
       parsed.error.errors.forEach((err) => {
@@ -161,8 +190,9 @@ export const PreorderForm = () => {
           last_name: parsed.data.last_name,
           email: parsed.data.email,
           phone: parsed.data.phone,
-          tshirt_size: parsed.data.tshirt_size,
-          tshirt_color: parsed.data.tshirt_color,
+          product_type: parsed.data.product_type,
+          tshirt_size: payload.tshirt_size,
+          tshirt_color: payload.tshirt_color,
           delivery_method: parsed.data.delivery_method,
           street: parsed.data.street || null,
           postal_code: parsed.data.postal_code || null,
@@ -228,6 +258,28 @@ export const PreorderForm = () => {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <div className="space-y-2">
+        <Label className="text-sm uppercase tracking-wide">Product</Label>
+        <RadioGroup
+          value={form.product_type}
+          onValueChange={(v) => updateField("product_type", v)}
+          className={cn(
+            "flex flex-col gap-2 p-3 border",
+            errors.has("product_type") ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
+          )}
+        >
+          {PRODUCTS.map((p) => (
+            <label key={p.id} className="flex items-center justify-between gap-2 cursor-pointer">
+              <span className="flex items-center gap-2">
+                <RadioGroupItem value={p.id} id={`product-${p.id}`} className="rounded-none" />
+                <span className="text-sm">{p.label}</span>
+              </span>
+              <span className="text-sm font-bold">€{fmt(p.price)}</span>
+            </label>
+          ))}
+        </RadioGroup>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="first_name" className="text-sm uppercase tracking-wide">Voornaam</Label>
@@ -257,39 +309,43 @@ export const PreorderForm = () => {
           aria-invalid={errors.has("phone")} className={inputClass("phone")} />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="tshirt_size" className="text-sm uppercase tracking-wide">T-shirtmaat</Label>
-        <Select value={form.tshirt_size} onValueChange={(v) => updateField("tshirt_size", v)}>
-          <SelectTrigger id="tshirt_size" aria-invalid={errors.has("tshirt_size")}
-            className={inputClass("tshirt_size")}>
-            <SelectValue placeholder="Kies een maat" />
-          </SelectTrigger>
-          <SelectContent>
-            {SIZES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!isCap && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="tshirt_size" className="text-sm uppercase tracking-wide">Maat</Label>
+            <Select value={form.tshirt_size} onValueChange={(v) => updateField("tshirt_size", v)}>
+              <SelectTrigger id="tshirt_size" aria-invalid={errors.has("tshirt_size")}
+                className={inputClass("tshirt_size")}>
+                <SelectValue placeholder="Kies een maat" />
+              </SelectTrigger>
+              <SelectContent>
+                {SIZES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-2">
-        <Label className="text-sm uppercase tracking-wide">Shirtkleur</Label>
-        <RadioGroup
-          value={form.tshirt_color}
-          onValueChange={(v) => updateField("tshirt_color", v)}
-          className={cn(
-            "flex gap-3 p-3 border",
-            errors.has("tshirt_color") ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
-          )}
-        >
-          <label className="flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="black" id="color-black" className="rounded-none" />
-            <span className="text-sm">Zwart</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="white" id="color-white" className="rounded-none" />
-            <span className="text-sm">Wit</span>
-          </label>
-        </RadioGroup>
-      </div>
+          <div className="space-y-2">
+            <Label className="text-sm uppercase tracking-wide">Kleur</Label>
+            <RadioGroup
+              value={form.tshirt_color}
+              onValueChange={(v) => updateField("tshirt_color", v)}
+              className={cn(
+                "flex gap-3 p-3 border",
+                errors.has("tshirt_color") ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
+              )}
+            >
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="black" id="color-black" className="rounded-none" />
+                <span className="text-sm">Zwart</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="white" id="color-white" className="rounded-none" />
+                <span className="text-sm">Wit</span>
+              </label>
+            </RadioGroup>
+          </div>
+        </>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="discount_code" className="text-sm uppercase tracking-wide">Kortingscode (optioneel)</Label>
@@ -307,7 +363,7 @@ export const PreorderForm = () => {
         )}
         {discountStatus === "valid" && form.discount_code.trim() && (
           <p className="text-sm font-medium border border-foreground bg-foreground text-background px-3 py-2">
-            Kortingscode toegepast! Je betaalt €29,99.
+            Kortingscode toegepast! Je krijgt €{fmt(DISCOUNT_AMOUNT)} korting.
           </p>
         )}
         {discountStatus === "invalid" && (
@@ -327,7 +383,7 @@ export const PreorderForm = () => {
         >
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="pickup" id="dm-pickup" className="rounded-none" />
-            <span className="text-sm">Ophalen bij het Snorrenfeest 29 mei</span>
+            <span className="text-sm">Ophalen bij het Snorrenfeest 12 december</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="shipping" id="dm-ship" className="rounded-none" />
@@ -365,8 +421,8 @@ export const PreorderForm = () => {
         <div className="border border-foreground p-4 space-y-1 text-sm">
           <div className="text-xs uppercase tracking-wider font-bold mb-2">Besteloverzicht</div>
           <div className="flex justify-between">
-            <span>Shirtprijs</span>
-            <span>€{fmt(shirtPrice)}</span>
+            <span>{product ? product.label : "Product"}</span>
+            <span>{product ? `€${fmt(productPrice)}` : "—"}</span>
           </div>
           {form.delivery_method === "shipping" && (
             <div className="flex justify-between">
@@ -388,7 +444,7 @@ export const PreorderForm = () => {
           <div className="flex justify-between font-bold text-base">
             <span>Totaal</span>
             <span>
-              {form.delivery_method === "shipping" && (shippingLoading || shippingCost === null)
+              {!product || (form.delivery_method === "shipping" && (shippingLoading || shippingCost === null))
                 ? "—"
                 : `€${fmt(orderTotal)}`}
             </span>
