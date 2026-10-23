@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { PixelImage } from "@/components/PixelImage";
 import { supabase } from "@/integrations/supabase/client";
 import portrait from "@/assets/project-snor-portrait.png";
+import { orderItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 
 interface Order {
   first_name: string;
@@ -12,6 +13,7 @@ interface Order {
   delivery_method: string;
   amount_paid: number | null;
   payment_status: string;
+  order_items?: OrderItem[];
 }
 
 const Bedankt = () => {
@@ -29,8 +31,8 @@ const Bedankt = () => {
     (async () => {
       // Poll for webhook confirmation using secure RPC function
       for (let i = 0; i < 8; i++) {
-        const { data } = await supabase.rpc("get_preorder_by_id", { _order_id: orderId });
-        const row = Array.isArray(data) ? data[0] : data;
+        const { data } = await supabase.rpc("get_merch_order", { _order_id: orderId });
+        const row = data as unknown as Order | null;
         if (cancelled) return;
         if (row?.payment_status === "paid") {
           setOrder(row as Order);
@@ -91,9 +93,7 @@ const Bedankt = () => {
             <div className="mt-10 w-full max-w-md border border-foreground p-6">
               <h2 className="font-display italic text-xl mb-4">Je bestelling</h2>
               <ul className="space-y-2 text-sm">
-                <li><span className="uppercase tracking-wide text-muted-foreground">Product:</span> <strong>{order.product_type === "cap" ? "Pet" : order.product_type === "longsleeve" ? "Longsleeve" : "T-shirt"}</strong></li>
-                {order.product_type !== "cap" && <li><span className="uppercase tracking-wide text-muted-foreground">Maat:</span> <strong>{order.tshirt_size}</strong></li>}
-                {order.product_type !== "cap" && <li><span className="uppercase tracking-wide text-muted-foreground">Kleur:</span> <strong>{colorLabel}</strong></li>}
+                {orderItems(order).map((item, index) => <li key={index}><strong>{item.quantity}× {item.product_name}</strong>{item.product_type !== "cap" && ` — ${item.tshirt_size} · ${item.tshirt_color === "black" ? "Zwart" : "Wit"}`}</li>)}
                 <li><span className="uppercase tracking-wide text-muted-foreground">Bezorging:</span> <strong>{deliveryLabel}</strong></li>
                 <li>
                   <span className="uppercase tracking-wide text-muted-foreground">Betaald:</span>{" "}
