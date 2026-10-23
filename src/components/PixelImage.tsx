@@ -11,6 +11,7 @@ interface PixelImageProps {
   duration?: number;
   /** Delay before animation starts in ms */
   startDelay?: number;
+  animate?: boolean;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ export const PixelImage = ({
   rows = 18,
   duration = 1800,
   startDelay = 250,
+  animate = true,
   className,
 }: PixelImageProps) => {
   const tiles = useMemo(() => {
@@ -56,7 +58,7 @@ export const PixelImage = ({
       {tiles.map(({ x, y, delay }) => (
         <div
           key={`${x}-${y}`}
-          className="absolute pixel-tile"
+          className={cn("absolute", animate ? "pixel-tile" : "opacity-100")}
           style={{
             left: `${x * tileW}%`,
             top: `${y * tileH}%`,
