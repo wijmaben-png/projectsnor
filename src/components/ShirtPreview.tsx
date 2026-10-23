@@ -4,7 +4,7 @@ import longsleeveWhiteBack from "@/assets/longsleeve-white-back.png.asset.json";
 import longsleeveBlackFront from "@/assets/longsleeve-black-front-correct.png.asset.json";
 import longsleeveBlackBack from "@/assets/longsleeve-black-back-correct.png.asset.json";
 import walkingBlackBack from "@/assets/walkinteeachterkantzwart.webp.asset.json";
-import walkingWhiteBack from "@/assets/walkingteebackwit.webp.asset.json";
+import walkingWhiteBack from "@/assets/projectsnorwalkingteewitachterkant.png.asset.json";
 import capFront from "@/assets/voorkantpet-2.png.asset.json";
 import capOgBack from "@/assets/acherkantpethoofdbone-2.png.asset.json";
 import psBlueFront from "@/assets/voorkantpetps.png.asset.json";
