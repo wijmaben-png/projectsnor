@@ -21,6 +21,7 @@ type Preorder = {
   last_name: string;
   email: string;
   phone: string;
+  product_type: string;
   tshirt_size: string;
   tshirt_color: string;
   delivery_method: string;
@@ -36,6 +37,8 @@ type Preorder = {
 
 type Filter = "all" | "pickup" | "shipping";
 type ColorFilter = "all" | "black" | "white";
+type ProductFilter = "all" | "shirt" | "longsleeve" | "cap";
+const productLabel = (t: string) => t === "cap" ? "Pet" : t === "longsleeve" ? "Longsleeve" : "Shirt";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -45,6 +48,7 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [colorFilter, setColorFilter] = useState<ColorFilter>("all");
+  const [productFilter, setProductFilter] = useState<ProductFilter>("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
@@ -153,13 +157,14 @@ const Admin = () => {
   const filtered = preorders
     .filter((p) => p.payment_status !== "expired" && p.payment_status !== "failed" && p.payment_status !== "canceled")
     .filter((p) => filter === "all" ? true : p.delivery_method === filter)
-    .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter);
+    .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter)
+    .filter((p) => productFilter === "all" ? true : (p.product_type ?? "shirt") === productFilter);
 
   const handleExport = () => {
-    const headers = ["Datum","Voornaam","Achternaam","E-mail","Telefoon","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Bedrag","Korting","Tracking"];
+    const headers = ["Datum","Voornaam","Achternaam","E-mail","Telefoon","Product","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Bedrag","Korting","Tracking"];
     const rows = filtered.map((p) => [
       new Date(p.created_at).toISOString(),
-      p.first_name, p.last_name, p.email, p.phone,
+      p.first_name, p.last_name, p.email, p.phone, productLabel(p.product_type),
       p.tshirt_size, p.tshirt_color,
       p.delivery_method,
       p.street ?? "", p.postal_code ?? "", p.city ?? "",
@@ -234,6 +239,14 @@ const Admin = () => {
             {colorBtn("Alle kleuren", "all")}
             {colorBtn("Zwart", "black")}
             {colorBtn("Wit", "white")}
+            <span className="w-px h-8 bg-foreground/30" />
+            {([["Alle producten","all"],["Shirts","shirt"],["Longsleeves","longsleeve"],["Petten","cap"]] as [string, ProductFilter][]).map(([l, v]) => (
+              <Button key={v} variant="outline" onClick={() => setProductFilter(v)}
+                className={cn("border-foreground rounded-none uppercase text-xs tracking-wider",
+                  productFilter === v ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background")}>
+                {l}
+              </Button>
+            ))}
             <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
@@ -253,7 +266,7 @@ const Admin = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-foreground hover:bg-transparent">
-                {["Datum","Naam","E-mail","Tel","Maat","Kleur","Bezorging","Adres","Status","Bedrag","Korting","Tracking","Actie"].map((h) => (
+                {["Datum","Naam","E-mail","Tel","Product","Maat","Kleur","Bezorging","Adres","Status","Bedrag","Korting","Tracking","Actie"].map((h) => (
                   <TableHead key={h} className="text-foreground uppercase text-xs tracking-wider whitespace-nowrap">
                     {h}
                   </TableHead>
@@ -263,7 +276,7 @@ const Admin = () => {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow className="border-foreground hover:bg-transparent">
-                  <TableCell colSpan={13} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
                     Geen bestellingen
                   </TableCell>
                 </TableRow>
@@ -276,9 +289,10 @@ const Admin = () => {
                     <TableCell className="text-sm whitespace-nowrap">{p.first_name} {p.last_name}</TableCell>
                     <TableCell className="text-sm">{p.email}</TableCell>
                     <TableCell className="text-sm whitespace-nowrap">{p.phone}</TableCell>
+                    <TableCell className="text-sm">{productLabel(p.product_type)}</TableCell>
                     <TableCell className="text-sm font-bold">{p.tshirt_size}</TableCell>
                     <TableCell className="text-sm">
-                      {p.tshirt_color === "black" ? "Zwart" : p.tshirt_color === "white" ? "Wit" : p.tshirt_color}
+                      {p.tshirt_color === "black" ? "Zwart" : p.tshirt_color === "white" ? "Wit" : p.tshirt_color === "none" ? "—" : p.tshirt_color}
                     </TableCell>
                     <TableCell className="text-sm">
                       {p.delivery_method === "shipping" ? "Verzenden" : "Ophalen"}

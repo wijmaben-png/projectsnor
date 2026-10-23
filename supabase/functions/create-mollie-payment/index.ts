@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const amount = Math.round((shirtPrice + shippingCost) * 100) / 100;
+    const amount = Math.round((productPrice + shippingCost) * 100) / 100;
     const amountStr = amount.toFixed(2);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -152,6 +152,7 @@ Deno.serve(async (req) => {
         last_name: data.last_name,
         email: data.email,
         phone: data.phone,
+        product_type: data.product_type,
         tshirt_size: data.tshirt_size,
         tshirt_color: data.tshirt_color,
         delivery_method: data.delivery_method,
@@ -181,7 +182,7 @@ Deno.serve(async (req) => {
 
     const molliePayload = {
       amount: { currency: "EUR", value: amountStr },
-      description: `Project Snor t-shirt (${data.tshirt_size}, ${data.tshirt_color})`,
+      description: data.product_type === "cap" ? "Project Snor pet" : `Project Snor ${PRODUCT_LABELS[data.product_type]} (${data.tshirt_size}, ${data.tshirt_color})`,
       redirectUrl,
       webhookUrl,
       metadata: { preorder_id: preorder.id },

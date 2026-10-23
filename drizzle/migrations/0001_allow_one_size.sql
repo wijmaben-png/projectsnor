@@ -1,0 +1,2 @@
+ALTER TABLE public.preorders DROP CONSTRAINT preorders_tshirt_size_check;
+ALTER TABLE public.preorders ADD CONSTRAINT preorders_tshirt_size_check CHECK (tshirt_size = ANY (ARRAY['S','M','L','XL','ONE']));

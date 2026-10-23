@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     const deliveryBlock = isShipping
       ? `<p style="margin:0 0 16px;">Je shirt wordt verzonden naar <strong>${addressLine}</strong>. Je ontvangt zo snel mogelijk een tracking nummer.</p>`
-      : `<p style="margin:0 0 16px;">Je shirt kun je ophalen op <strong>29 mei tijdens het Snorrenfeest</strong>. We zien je daar!</p>`;
+      : `<p style="margin:0 0 16px;">Je bestelling kun je ophalen op <strong>12 december tijdens het Snorrenfeest</strong>. We zien je daar!</p>`;
 
     const html = `
       <div style="font-family: Georgia, 'Times New Roman', serif; background:#ffffff; color:#000000; padding:32px; max-width:560px; margin:0 auto;">
