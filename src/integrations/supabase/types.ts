@@ -101,6 +101,53 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          preorder_id: string
+          product_model: string
+          product_name: string
+          product_type: string
+          quantity: number
+          tshirt_color: string
+          tshirt_size: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preorder_id: string
+          product_model: string
+          product_name: string
+          product_type: string
+          quantity?: number
+          tshirt_color: string
+          tshirt_size: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preorder_id?: string
+          product_model?: string
+          product_name?: string
+          product_type?: string
+          quantity?: number
+          tshirt_color?: string
+          tshirt_size?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_preorder_id_fkey"
+            columns: ["preorder_id"]
+            isOneToOne: false
+            referencedRelation: "preorders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       preorders: {
         Row: {
           amount_paid: number | null
@@ -235,6 +282,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_merch_order: { Args: { _order_id: string }; Returns: Json }
       get_preorder_by_id: {
         Args: { _order_id: string }
         Returns: {

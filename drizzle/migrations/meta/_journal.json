@@ -15,6 +15,13 @@
       "when": 1792745352488,
       "tag": "0001_allow_one_size",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792746487370,
+      "tag": "0002_add_merch_order_items",
+      "breakpoints": true
     }
   ]
 }
