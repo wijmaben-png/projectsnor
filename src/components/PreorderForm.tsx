@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { MERCH_PRODUCTS, priceItems, itemSubtotal, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
+import { Plus, Trash2 } from "lucide-react";
 
 const SIZES = ["S", "M", "L", "XL"] as const;
 type Size = (typeof SIZES)[number];
@@ -21,11 +23,7 @@ type Size = (typeof SIZES)[number];
 const COLORS = ["black", "white"] as const;
 type Color = (typeof COLORS)[number];
 
-const PRODUCTS = [
-  { id: "shirt", label: "Shirt", price: 32.99 },
-  { id: "longsleeve", label: "Longsleeve (Snorrig hart)", price: 44.99 },
-  { id: "cap", label: "Pet", price: 34.99 },
-] as const;
+const PRODUCTS = MERCH_PRODUCTS.filter((p) => p.available && p.price !== null);
 type Product = (typeof PRODUCTS)[number]["id"];
 
 const DISCOUNT_AMOUNT = 3.0;
@@ -37,7 +35,7 @@ const baseSchema = z.object({
   last_name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   phone: z.string().trim().min(6).max(20).regex(/^[+\d\s()-]+$/),
-  product_type: z.enum(["shirt", "longsleeve", "cap"]),
+  product_type: z.string(),
   tshirt_size: z.enum(SIZES),
   tshirt_color: z.enum(COLORS),
   delivery_method: z.enum(["pickup", "shipping"]),
@@ -88,8 +86,9 @@ export const PreorderForm = () => {
   const [discountStatus, setDiscountStatus] = useState<"none" | "checking" | "valid" | "invalid">("none");
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const isCap = form.product_type === "cap";
+  const isCap = PRODUCTS.find((p) => p.id === form.product_type)?.type === "cap";
 
   // Fetch live shipping cost from Sendcloud when "shipping" is selected
   useEffect(() => {
@@ -116,7 +115,7 @@ export const PreorderForm = () => {
   }, [form.delivery_method]);
 
   const product = PRODUCTS.find((p) => p.id === form.product_type);
-  const basePrice = product?.price ?? 0;
+  const basePrice = cart.length ? itemSubtotal(priceItems(cart)) : 0;
   const productPrice = discountStatus === "valid" && form.discount_code.trim()
     ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
     : basePrice;
@@ -138,9 +137,8 @@ export const PreorderForm = () => {
 
   const requiredFields = (): FieldKey[] => {
     const base: FieldKey[] = [
-      "first_name", "last_name", "email", "phone", "product_type", "delivery_method",
+      "first_name", "last_name", "email", "phone", "delivery_method",
     ];
-    if (!isCap) base.push("tshirt_size", "tshirt_color");
     if (form.delivery_method === "shipping") {
       base.push("street", "postal_code", "city");
     }
@@ -149,6 +147,10 @@ export const PreorderForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cart.length) {
+      toast({ title: "Je winkelmand is leeg", description: "Voeg eerst een artikel toe." });
+      return;
+    }
 
     const missing = new Set<FieldKey>();
     requiredFields().forEach((k) => {
@@ -168,8 +170,8 @@ export const PreorderForm = () => {
 
     const parsed = baseSchema.safeParse({
       ...payload,
-      tshirt_size: isCap ? "S" : payload.tshirt_size,
-      tshirt_color: isCap ? "black" : payload.tshirt_color,
+      tshirt_size: "S",
+      tshirt_color: "black",
     });
     if (!parsed.success) {
       const invalid = new Set<FieldKey>();
@@ -190,9 +192,7 @@ export const PreorderForm = () => {
           last_name: parsed.data.last_name,
           email: parsed.data.email,
           phone: parsed.data.phone,
-          product_type: parsed.data.product_type,
-          tshirt_size: payload.tshirt_size,
-          tshirt_color: payload.tshirt_color,
+          items: cart,
           delivery_method: parsed.data.delivery_method,
           street: parsed.data.street || null,
           postal_code: parsed.data.postal_code || null,
@@ -274,7 +274,7 @@ export const PreorderForm = () => {
                 <RadioGroupItem value={p.id} id={`product-${p.id}`} className="rounded-none" />
                 <span className="text-sm">{p.label}</span>
               </span>
-              <span className="text-sm font-bold">€{fmt(p.price)}</span>
+              <span className="text-sm font-bold">€{fmt(p.price ?? 0)}</span>
             </label>
           ))}
         </RadioGroup>
@@ -346,6 +346,30 @@ export const PreorderForm = () => {
           </div>
         </>
       )}
+
+      <Button type="button" variant="outline" className="w-full rounded-none border-foreground" onClick={() => {
+        try {
+          const item = { product_model: form.product_type, tshirt_size: isCap ? "ONE" : form.tshirt_size, tshirt_color: isCap ? "none" : form.tshirt_color, quantity: 1 };
+          priceItems([item]);
+          setCart((current) => {
+            const index = current.findIndex((i) => i.product_model === item.product_model && i.tshirt_size === item.tshirt_size && i.tshirt_color === item.tshirt_color);
+            return index < 0 ? [...current, item] : current.map((i, n) => n === index ? { ...i, quantity: i.quantity + 1 } : i);
+          });
+        } catch (error) { toast({ title: "Kies je artikel", description: error instanceof Error ? error.message : "Kies een product, maat en kleur." }); }
+      }}><Plus /> Toevoegen aan winkelmand</Button>
+
+      <section aria-label="Winkelmand" className="border-y border-foreground py-4 space-y-3">
+        <h2 className="font-display text-xl">Je winkelmand</h2>
+        {!cart.length && <p className="text-sm text-muted-foreground">Je winkelmand is leeg.</p>}
+        {cart.length > 0 && priceItems(cart).map((item, index) => (
+          <div key={`${item.product_model}-${item.tshirt_size}-${item.tshirt_color}`} className="flex items-center gap-3 text-sm">
+            <div className="flex-1 min-w-0"><p className="font-bold">{item.product_name}</p>{item.product_type !== "cap" && <p>{item.tshirt_size} · {item.tshirt_color === "black" ? "Zwart" : "Wit"}</p>}</div>
+            <Input aria-label={`Aantal ${item.product_name}`} type="number" min={1} value={item.quantity} className="w-16 rounded-none border-foreground" onChange={(e) => { const quantity = Number(e.target.value); if (Number.isInteger(quantity) && quantity > 0) setCart((items) => items.map((i, n) => n === index ? { ...i, quantity } : i)); }} />
+            <span>€{fmt(item.unit_price * item.quantity)}</span>
+            <Button type="button" variant="ghost" size="icon" title="Verwijder artikel" aria-label={`Verwijder ${item.product_name}`} onClick={() => setCart((items) => items.filter((_, n) => n !== index))}><Trash2 /></Button>
+          </div>
+        ))}
+      </section>
 
       <div className="space-y-2">
         <Label htmlFor="discount_code" className="text-sm uppercase tracking-wide">Kortingscode (optioneel)</Label>
@@ -421,8 +445,8 @@ export const PreorderForm = () => {
         <div className="border border-foreground p-4 space-y-1 text-sm">
           <div className="text-xs uppercase tracking-wider font-bold mb-2">Besteloverzicht</div>
           <div className="flex justify-between">
-            <span>{product ? product.label : "Product"}</span>
-            <span>{product ? `€${fmt(productPrice)}` : "—"}</span>
+            <span>Artikelen{discountStatus === "valid" ? " (met korting)" : ""}</span>
+            <span>{cart.length ? `€${fmt(productPrice)}` : "—"}</span>
           </div>
           {form.delivery_method === "shipping" && (
             <div className="flex justify-between">
@@ -444,7 +468,7 @@ export const PreorderForm = () => {
           <div className="flex justify-between font-bold text-base">
             <span>Totaal</span>
             <span>
-              {!product || (form.delivery_method === "shipping" && (shippingLoading || shippingCost === null))
+              {!cart.length || (form.delivery_method === "shipping" && (shippingLoading || shippingCost === null))
                 ? "—"
                 : `€${fmt(orderTotal)}`}
             </span>

@@ -1,6 +1,7 @@
 import { PixelImage } from "@/components/PixelImage";
-import { ShirtPreview } from "@/components/ShirtPreview";
-import { PreorderForm } from "@/components/PreorderForm";
+import { Link } from "react-router-dom";
+import { Ticket, ShoppingBag, ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import portrait from "@/assets/project-snor-portrait.png";
 
 const Index = () => {
@@ -25,30 +26,17 @@ const Index = () => {
           />
         </div>
 
-        <h2 className="mt-10 font-title text-4xl md:text-5xl text-center">
-          Drop 2, nu live
-        </h2>
-
-        <p className="mt-5 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Er is geluisterd — dankjulliewel voor de stemmen. Onze tweede merch
-          drop ooit is binnen: twee verse longsleeves en een pet die je snor
-          er nog strakker uit laat zien.
-        </p>
-
-        <p className="mt-3 text-sm md:text-base text-center max-w-md text-muted-foreground">
-          Beperkte oplage, dus wees er snor bij.
-        </p>
-
-        <div className="mt-8 flex justify-center w-full">
-          <ShirtPreview />
-        </div>
+        <nav aria-label="Tickets en merch" className="mt-10 w-full max-w-md grid gap-4">
+          <Button asChild className="rounded-none h-auto min-h-20 px-5 py-4 whitespace-normal justify-between">
+            <Link to="/tickets"><span className="flex items-center gap-4"><Ticket className="!size-6" /><span className="text-left"><span className="block text-xl font-bold uppercase">Tickets</span><span className="block text-xs mt-1">Snorre feest 2.0 · 12 december</span></span></span><ArrowUpRight className="!size-5" /></Link>
+          </Button>
+          <Button asChild variant="outline" className="rounded-none h-auto min-h-20 px-5 py-4 whitespace-normal justify-between border-foreground">
+            <Link to="/merch"><span className="flex items-center gap-4"><ShoppingBag className="!size-6" /><span className="text-xl font-bold uppercase">Snorre merch</span></span><ArrowUpRight className="!size-5" /></Link>
+          </Button>
+        </nav>
       </section>
 
-      <section className="w-full max-w-md mt-10 mb-16">
-        <PreorderForm />
-      </section>
-
-      <footer className="mt-auto pt-8 text-xs uppercase tracking-widest text-muted-foreground">
+      <footer className="mt-auto pt-12 text-xs uppercase tracking-widest text-muted-foreground">
         © Project Snor
       </footer>
     </main>

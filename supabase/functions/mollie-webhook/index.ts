@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
     // On first paid transition, send confirmation email
     if (dbStatus === "paid" && !wasPaid) {
       try {
+        const { data: items } = await supabase.from("order_items").select("*").eq("preorder_id", row.id);
         await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: "order-confirmation",
@@ -89,6 +90,7 @@ Deno.serve(async (req) => {
               first_name: row.first_name,
               last_name: row.last_name,
               product_type: row.product_type,
+              order_items: items ?? [],
               tshirt_size: row.tshirt_size,
               tshirt_color: row.tshirt_color,
               delivery_method: row.delivery_method,

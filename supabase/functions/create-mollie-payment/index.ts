@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
+import { priceItems, itemSubtotal } from "../_shared/merch-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,9 +25,10 @@ const BodySchema = z.object({
   last_name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   phone: z.string().trim().min(6).max(30),
-  product_type: z.enum(["shirt", "longsleeve", "cap"]),
-  tshirt_size: z.enum(["S", "M", "L", "XL", "ONE"]),
-  tshirt_color: z.enum(["black", "white", "none"]),
+  product_type: z.enum(["shirt", "longsleeve", "cap"]).optional(),
+  tshirt_size: z.enum(["S", "M", "L", "XL", "ONE"]).optional(),
+  tshirt_color: z.enum(["black", "white", "none"]).optional(),
+  items: z.array(z.object({ product_model: z.string(), tshirt_size: z.string(), tshirt_color: z.string(), quantity: z.number().int().positive() })).min(1).optional(),
   delivery_method: z.enum(["pickup", "shipping"]),
   street: z.string().trim().max(200).optional().nullable(),
   postal_code: z.string().trim().max(20).optional().nullable(),
@@ -57,19 +59,15 @@ Deno.serve(async (req) => {
     }
     const data = parsed.data;
 
-    if (data.product_type === "cap") {
-      if (data.tshirt_size !== "ONE" || data.tshirt_color !== "none") {
-        return new Response(
-          JSON.stringify({ error: "Invalid size/color for cap" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-    } else if (data.tshirt_size === "ONE" || data.tshirt_color === "none") {
-      return new Response(
-        JSON.stringify({ error: "Invalid size/color for product" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    let items;
+    try {
+      if (!data.items && !data.product_type) throw new Error("Kies een artikel.");
+      items = priceItems(data.items ?? [{ product_model: data.product_type === "cap" ? "pet-og" : data.product_type === "longsleeve" ? "snorrig-hart" : "shirt", tshirt_size: data.tshirt_size ?? "", tshirt_color: data.tshirt_color ?? "", quantity: 1 }]);
+    } catch (error) {
+      return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Invalid items" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    const firstItem = items[0];
+    if (!firstItem) throw new Error("Missing items");
 
     if (data.delivery_method === "shipping") {
       if (!data.street || !data.postal_code || !data.city) {
@@ -93,7 +91,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const basePrice = PRICES[data.product_type];
+    const basePrice = itemSubtotal(items);
     const productPrice = discountValid
       ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
       : basePrice;
@@ -152,9 +150,9 @@ Deno.serve(async (req) => {
         last_name: data.last_name,
         email: data.email,
         phone: data.phone,
-        product_type: data.product_type,
-        tshirt_size: data.tshirt_size,
-        tshirt_color: data.tshirt_color,
+        product_type: firstItem.product_type,
+        tshirt_size: firstItem.tshirt_size,
+        tshirt_color: firstItem.tshirt_color,
         delivery_method: data.delivery_method,
         street: data.delivery_method === "shipping" ? data.street : null,
         postal_code: data.delivery_method === "shipping" ? data.postal_code : null,
@@ -172,6 +170,12 @@ Deno.serve(async (req) => {
       throw new Error("Failed to create preorder");
     }
 
+    const { error: itemError } = await supabase.from("order_items").insert(items.map((item) => ({ ...item, preorder_id: preorder.id })));
+    if (itemError) {
+      await supabase.from("preorders").update({ payment_status: "failed" }).eq("id", preorder.id);
+      throw new Error("Failed to save order items");
+    }
+
     const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\./)?.[1];
     const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/mollie-webhook`;
 
@@ -182,7 +186,7 @@ Deno.serve(async (req) => {
 
     const molliePayload = {
       amount: { currency: "EUR", value: amountStr },
-      description: data.product_type === "cap" ? "Project Snor pet" : `Project Snor ${PRODUCT_LABELS[data.product_type]} (${data.tshirt_size}, ${data.tshirt_color})`,
+      description: `Project Snor: ${items.map((item) => `${item.quantity}× ${item.product_name}`).join(", ")}`,
       redirectUrl,
       webhookUrl,
       metadata: { preorder_id: preorder.id },

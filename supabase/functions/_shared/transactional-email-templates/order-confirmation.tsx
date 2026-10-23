@@ -17,6 +17,7 @@ interface OrderConfirmationProps {
   street?: string
   postal_code?: string
   city?: string
+  order_items?: { product_name: string; product_type: string; tshirt_size: string; tshirt_color: string; quantity: number }[]
 }
 
 const OrderConfirmationEmail = ({
@@ -30,6 +31,7 @@ const OrderConfirmationEmail = ({
   street,
   postal_code,
   city,
+  order_items = [],
 }: OrderConfirmationProps) => {
   const colorLabel = tshirt_color === 'black' ? 'Zwart' : tshirt_color === 'white' ? 'Wit' : tshirt_color
   const priceLabel = typeof amount_paid === 'number' ? `€${amount_paid.toFixed(2)}` : '—'
@@ -52,9 +54,13 @@ const OrderConfirmationEmail = ({
 
           <Section style={orderBox}>
             <Text style={orderTitle}>Je bestelling</Text>
-            <Text style={orderItem}>Product: <strong>{productLabel}</strong></Text>
-            {!isCap && <Text style={orderItem}>Maat: <strong>{tshirt_size}</strong></Text>}
-            {!isCap && <Text style={orderItem}>Kleur: <strong>{colorLabel}</strong></Text>}
+            {order_items.length ? order_items.map((item, index) => (
+              <Text key={index} style={orderItem}><strong>{item.quantity}× {item.product_name}</strong>{item.product_type !== 'cap' ? ` — ${item.tshirt_size}, ${item.tshirt_color === 'black' ? 'Zwart' : 'Wit'}` : ''}</Text>
+            )) : <>
+              <Text style={orderItem}>Product: <strong>{productLabel}</strong></Text>
+              {!isCap && <Text style={orderItem}>Maat: <strong>{tshirt_size}</strong></Text>}
+              {!isCap && <Text style={orderItem}>Kleur: <strong>{colorLabel}</strong></Text>}
+            </>}
             <Text style={orderItem}>Totaalbedrag: <strong>{priceLabel}</strong></Text>
           </Section>
 
