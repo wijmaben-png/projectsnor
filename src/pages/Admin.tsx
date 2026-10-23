@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { MERCH_PRODUCTS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Preorder = {
   id: string;
@@ -33,6 +35,7 @@ type Preorder = {
   discount_code_used: boolean;
   tracking_number: string | null;
   sendcloud_parcel_id: string | null;
+  order_items?: OrderItem[];
 };
 
 type Filter = "all" | "pickup" | "shipping";
@@ -49,12 +52,13 @@ const Admin = () => {
   const [filter, setFilter] = useState<Filter>("all");
   const [colorFilter, setColorFilter] = useState<ColorFilter>("all");
   const [productFilter, setProductFilter] = useState<ProductFilter>("all");
+  const [modelFilter, setModelFilter] = useState("all");
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
   const load = async () => {
     const { data, error } = await supabase
       .from("preorders")
-      .select("*")
+      .select("*, order_items(*)")
       .order("created_at", { ascending: false });
     if (error) {
       toast({ title: "Laden mislukt", description: error.message, variant: "destructive" });
@@ -157,22 +161,28 @@ const Admin = () => {
   const filtered = preorders
     .filter((p) => p.payment_status !== "expired" && p.payment_status !== "failed" && p.payment_status !== "canceled")
     .filter((p) => filter === "all" ? true : p.delivery_method === filter)
-    .filter((p) => colorFilter === "all" ? true : p.tshirt_color === colorFilter)
-    .filter((p) => productFilter === "all" ? true : (p.product_type ?? "shirt") === productFilter);
+    .filter((p) => matchesItems(orderItems(p), productFilter, modelFilter, colorFilter));
+  const customers = groupCustomers(filtered);
+  const itemCounts = filtered.flatMap((p) => orderItems(p)).filter((item) => matchesItems([item], productFilter, modelFilter, colorFilter)).reduce<Record<string, number>>((totals, item) => {
+    const key = `${item.product_name}${item.product_type === "cap" ? "" : ` · ${item.tshirt_color === "black" ? "Zwart" : "Wit"} · ${item.tshirt_size}`}`;
+    totals[key] = (totals[key] ?? 0) + item.quantity;
+    return totals;
+  }, {});
 
   const handleExport = () => {
-    const headers = ["Datum","Voornaam","Achternaam","E-mail","Telefoon","Product","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Bedrag","Korting","Tracking"];
-    const rows = filtered.map((p) => [
+    const headers = ["Bestelnummer","Datum","Voornaam","Achternaam","E-mail","Telefoon","Product","Model","Aantal","Artikelprijs","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Besteltotaal","Korting","Tracking"];
+    const rows = filtered.flatMap((p) => orderItems(p).map((item) => [
+      p.id,
       new Date(p.created_at).toISOString(),
-      p.first_name, p.last_name, p.email, p.phone, productLabel(p.product_type),
-      p.tshirt_size, p.tshirt_color,
+      p.first_name, p.last_name, p.email, p.phone, item.product_name, item.product_model, String(item.quantity), String(item.unit_price),
+      item.tshirt_size, item.tshirt_color,
       p.delivery_method,
       p.street ?? "", p.postal_code ?? "", p.city ?? "",
       p.payment_status,
       p.amount_paid != null ? String(p.amount_paid) : "",
       p.discount_code_used ? "ja" : "nee",
       p.tracking_number ?? "",
-    ]);
+    ]));
     const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
     const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -230,6 +240,7 @@ const Admin = () => {
             <h1 className="font-display text-3xl font-black tracking-tight mt-1">
               Bestellingen ({filtered.length})
             </h1>
+            <p className="text-sm text-muted-foreground mt-2">{customers.length} klanten · {filtered.flatMap(orderItems).reduce((n, i) => n + i.quantity, 0)} artikelen</p>
           </div>
           <div className="flex flex-wrap gap-3">
             {filterBtn("Alle", "all")}
@@ -247,6 +258,10 @@ const Admin = () => {
                 {l}
               </Button>
             ))}
+            <Select value={modelFilter} onValueChange={setModelFilter}>
+              <SelectTrigger aria-label="Productmodel" className="w-56 border-foreground rounded-none"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="all">Alle modellen</SelectItem>{MERCH_PRODUCTS.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
+            </Select>
             <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
               {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
@@ -261,6 +276,11 @@ const Admin = () => {
             </Button>
           </div>
         </header>
+
+        <section aria-label="Artikelaantallen" className="border-y border-foreground py-4 mb-6 flex flex-wrap gap-x-8 gap-y-2">
+          {Object.entries(itemCounts).map(([label, count]) => <p key={label} className="text-sm"><strong>{count}×</strong> {label}</p>)}
+          {!Object.keys(itemCounts).length && <p className="text-sm text-muted-foreground">Geen artikelen voor deze selectie</p>}
+        </section>
 
         <div className="border border-foreground overflow-x-auto">
           <Table>
@@ -281,7 +301,10 @@ const Admin = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((p) => (
+                customers.map((customer) => (
+                  <tbody key={customer[0]?.email} className="contents">
+                    <TableRow className="bg-secondary border-foreground hover:bg-secondary"><TableCell colSpan={14} className="py-4"><strong>{customer[0]?.first_name} {customer[0]?.last_name}</strong><span className="ml-4 text-muted-foreground">{customer[0]?.email} · {customer.length} bestelling(en)</span></TableCell></TableRow>
+                    {customer.map((p) => (
                   <TableRow key={p.id} className="border-foreground hover:bg-secondary">
                     <TableCell className="text-xs whitespace-nowrap">
                       {new Date(p.created_at).toLocaleString("nl-NL")}
@@ -289,10 +312,10 @@ const Admin = () => {
                     <TableCell className="text-sm whitespace-nowrap">{p.first_name} {p.last_name}</TableCell>
                     <TableCell className="text-sm">{p.email}</TableCell>
                     <TableCell className="text-sm whitespace-nowrap">{p.phone}</TableCell>
-                    <TableCell className="text-sm">{productLabel(p.product_type)}</TableCell>
-                    <TableCell className="text-sm font-bold">{p.tshirt_size}</TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">{orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.quantity}× {item.product_name}</div>)}</TableCell>
+                    <TableCell className="text-sm font-bold">{orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.product_type === "cap" ? "—" : item.tshirt_size}</div>)}</TableCell>
                     <TableCell className="text-sm">
-                      {p.tshirt_color === "black" ? "Zwart" : p.tshirt_color === "white" ? "Wit" : p.tshirt_color === "none" ? "—" : p.tshirt_color}
+                      {orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.tshirt_color === "black" ? "Zwart" : item.tshirt_color === "white" ? "Wit" : "—"}</div>)}
                     </TableCell>
                     <TableCell className="text-sm">
                       {p.delivery_method === "shipping" ? "Verzenden" : "Ophalen"}
@@ -326,6 +349,8 @@ const Admin = () => {
                       )}
                     </TableCell>
                   </TableRow>
+                    ))}
+                  </tbody>
                 ))
               )}
             </TableBody>
