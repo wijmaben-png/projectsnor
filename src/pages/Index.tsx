@@ -31,7 +31,7 @@ const Index = () => {
             <Link to="/tickets"><span className="flex items-center gap-4"><Ticket className="!size-6" /><span className="text-left"><span className="block text-xl font-bold uppercase">Tickets</span><span className="block text-xs mt-1">Project Snor Feest 2.0 · 12 december</span></span></span><ArrowUpRight className="!size-5" /></Link>
           </Button>
           <Button asChild variant="outline" className="rounded-none h-auto min-h-20 px-5 py-4 whitespace-normal justify-between border-foreground">
-            <Link to="/merch"><span className="flex items-center gap-4"><ShoppingBag className="!size-6" /><span className="text-xl font-bold uppercase">Snorre merch</span></span><ArrowUpRight className="!size-5" /></Link>
+            <Link to="/merch"><span className="flex items-center gap-4"><ShoppingBag className="!size-6" /><span className="text-xl font-bold uppercase">Snorren Merch</span></span><ArrowUpRight className="!size-5" /></Link>
           </Button>
         </nav>
       </section>
