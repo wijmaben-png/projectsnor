@@ -50,7 +50,7 @@ const Bedankt = () => {
   const colorLabel = order?.tshirt_color === "black" ? "Zwart" : order?.tshirt_color === "white" ? "Wit" : order?.tshirt_color;
   const deliveryLabel = order?.delivery_method === "shipping"
     ? "Verzenden naar je adres"
-    : "Ophalen bij het Snorrenfeest (29 mei)";
+    : "Ophalen bij het Snorrenfeest (12 december)";
   const isPaid = order?.payment_status === "paid";
 
   return (
@@ -93,7 +93,7 @@ const Bedankt = () => {
               <ul className="space-y-2 text-sm">
                 <li><span className="uppercase tracking-wide text-muted-foreground">Product:</span> <strong>{order.product_type === "cap" ? "Pet" : order.product_type === "longsleeve" ? "Longsleeve" : "T-shirt"}</strong></li>
                 {order.product_type !== "cap" && <li><span className="uppercase tracking-wide text-muted-foreground">Maat:</span> <strong>{order.tshirt_size}</strong></li>}
-                <li><span className="uppercase tracking-wide text-muted-foreground">Kleur:</span> <strong>{colorLabel}</strong></li>
+                {order.product_type !== "cap" && <li><span className="uppercase tracking-wide text-muted-foreground">Kleur:</span> <strong>{colorLabel}</strong></li>}
                 <li><span className="uppercase tracking-wide text-muted-foreground">Bezorging:</span> <strong>{deliveryLabel}</strong></li>
                 <li>
                   <span className="uppercase tracking-wide text-muted-foreground">Betaald:</span>{" "}
