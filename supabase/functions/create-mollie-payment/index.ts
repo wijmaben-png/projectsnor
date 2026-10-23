@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const PRICES: Record<string, number> = {
   shirt: 32.99,
-  longsleeve: 39.99,
+  longsleeve: 44.99,
   cap: 34.99,
 };
 const DISCOUNT_AMOUNT = 3.0;

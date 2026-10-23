@@ -23,7 +23,7 @@ type Color = (typeof COLORS)[number];
 
 const PRODUCTS = [
   { id: "shirt", label: "Shirt", price: 32.99 },
-  { id: "longsleeve", label: "Longsleeve (Snorrig hart)", price: 39.99 },
+  { id: "longsleeve", label: "Longsleeve (Snorrig hart)", price: 44.99 },
   { id: "cap", label: "Pet", price: 34.99 },
 ] as const;
 type Product = (typeof PRODUCTS)[number]["id"];
