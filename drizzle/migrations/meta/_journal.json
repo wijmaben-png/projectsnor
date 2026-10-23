@@ -8,6 +8,13 @@
       "when": 1792657320807,
       "tag": "0000_add_product_type_to_preorders",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792745352488,
+      "tag": "0001_allow_one_size",
+      "breakpoints": true
     }
   ]
 }
