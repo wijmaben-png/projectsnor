@@ -9,6 +9,7 @@ const SITE_NAME = "Project Snor"
 interface OrderConfirmationProps {
   first_name?: string
   last_name?: string
+  product_type?: string
   tshirt_size?: string
   tshirt_color?: string
   delivery_method?: string
@@ -21,6 +22,7 @@ interface OrderConfirmationProps {
 const OrderConfirmationEmail = ({
   first_name = 'Klant',
   last_name = '',
+  product_type = 'shirt',
   tshirt_size = '',
   tshirt_color = 'black',
   delivery_method = 'pickup',
@@ -31,6 +33,8 @@ const OrderConfirmationEmail = ({
 }: OrderConfirmationProps) => {
   const colorLabel = tshirt_color === 'black' ? 'Zwart' : tshirt_color === 'white' ? 'Wit' : tshirt_color
   const priceLabel = typeof amount_paid === 'number' ? `€${amount_paid.toFixed(2)}` : '—'
+  const productLabel = product_type === 'cap' ? 'Pet' : product_type === 'longsleeve' ? 'Longsleeve' : 'T-shirt'
+  const isCap = product_type === 'cap'
   const isShipping = delivery_method === 'shipping'
   const addressLine = isShipping && street
     ? `${street}, ${postal_code ?? ''} ${city ?? ''}`.trim()
@@ -48,18 +52,19 @@ const OrderConfirmationEmail = ({
 
           <Section style={orderBox}>
             <Text style={orderTitle}>Je bestelling</Text>
-            <Text style={orderItem}>Maat: <strong>{tshirt_size}</strong></Text>
-            <Text style={orderItem}>Kleur: <strong>{colorLabel}</strong></Text>
+            <Text style={orderItem}>Product: <strong>{productLabel}</strong></Text>
+            {!isCap && <Text style={orderItem}>Maat: <strong>{tshirt_size}</strong></Text>}
+            {!isCap && <Text style={orderItem}>Kleur: <strong>{colorLabel}</strong></Text>}
             <Text style={orderItem}>Totaalbedrag: <strong>{priceLabel}</strong></Text>
           </Section>
 
           {isShipping ? (
             <Text style={text}>
-              Je shirt wordt verzonden naar <strong>{addressLine}</strong>. Je ontvangt zo snel mogelijk een tracking nummer.
+              Je bestelling wordt verzonden naar <strong>{addressLine}</strong>. Je ontvangt zo snel mogelijk een tracking nummer.
             </Text>
           ) : (
             <Text style={text}>
-              Je shirt kun je ophalen op <strong>29 mei tijdens het Snorrenfeest</strong>. We zien je daar!
+              Je bestelling kun je ophalen op <strong>12 december tijdens het Snorrenfeest</strong>. We zien je daar!
             </Text>
           )}
 

@@ -6,6 +6,7 @@ import portrait from "@/assets/project-snor-portrait.png";
 
 interface Order {
   first_name: string;
+  product_type?: string;
   tshirt_size: string;
   tshirt_color: string;
   delivery_method: string;
@@ -90,7 +91,8 @@ const Bedankt = () => {
             <div className="mt-10 w-full max-w-md border border-foreground p-6">
               <h2 className="font-display italic text-xl mb-4">Je bestelling</h2>
               <ul className="space-y-2 text-sm">
-                <li><span className="uppercase tracking-wide text-muted-foreground">Maat:</span> <strong>{order.tshirt_size}</strong></li>
+                <li><span className="uppercase tracking-wide text-muted-foreground">Product:</span> <strong>{order.product_type === "cap" ? "Pet" : order.product_type === "longsleeve" ? "Longsleeve" : "T-shirt"}</strong></li>
+                {order.product_type !== "cap" && <li><span className="uppercase tracking-wide text-muted-foreground">Maat:</span> <strong>{order.tshirt_size}</strong></li>}
                 <li><span className="uppercase tracking-wide text-muted-foreground">Kleur:</span> <strong>{colorLabel}</strong></li>
                 <li><span className="uppercase tracking-wide text-muted-foreground">Bezorging:</span> <strong>{deliveryLabel}</strong></li>
                 <li>

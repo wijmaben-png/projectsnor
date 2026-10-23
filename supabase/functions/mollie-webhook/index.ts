@@ -88,6 +88,7 @@ Deno.serve(async (req) => {
             templateData: {
               first_name: row.first_name,
               last_name: row.last_name,
+              product_type: row.product_type,
               tshirt_size: row.tshirt_size,
               tshirt_color: row.tshirt_color,
               delivery_method: row.delivery_method,
