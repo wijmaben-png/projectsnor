@@ -15,7 +15,7 @@ const SHIRTS = [
   { color: "white", label: "Wit", front: whiteFront, back: whiteBack },
   { color: "longsleeve-white", label: "Snorrig hart - wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url },
   { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url },
-  { color: "cap", label: "Pet", front: capFront.url, back: capSide.url },
+  { color: "cap", label: "Pet OG", front: capFront.url, back: capSide.url },
 ] as const;
 
 const FLIP_BACK_MS = 2500;
