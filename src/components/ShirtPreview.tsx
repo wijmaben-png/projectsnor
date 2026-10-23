@@ -66,7 +66,7 @@ export const ShirtPreview = () => {
             <div className="relative w-full aspect-square border border-foreground bg-background overflow-hidden cursor-pointer select-none">
               <img
                 src={s.front}
-                    alt={`${s.label}${s.color === "black" || s.color === "white" ? " shirt" : ""} voorkant`}
+                    alt={`${s.label} voorkant`}
                 className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${s.color.startsWith("longsleeve-") ? "scale-[1.32]" : ""} ${
                   isBack ? "opacity-0" : "opacity-100"
                 }`}
@@ -75,7 +75,7 @@ export const ShirtPreview = () => {
               />
               <img
                 src={s.back}
-                    alt={`${s.label}${s.color === "black" || s.color === "white" ? " shirt" : ""} ${s.color === "cap" ? "zijkant" : "achterkant"}`}
+                    alt={`${s.label} ${s.backLabel}`}
                 className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${s.color.startsWith("longsleeve-") ? "scale-[1.32]" : ""} ${
                   isBack ? "opacity-100" : "opacity-0"
                 }`}
