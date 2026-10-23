@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -302,7 +302,7 @@ const Admin = () => {
                 </TableRow>
               ) : (
                 customers.map((customer) => (
-                  <tbody key={customer[0]?.email} className="contents">
+                  <Fragment key={customer[0]?.email}>
                     <TableRow className="bg-secondary border-foreground hover:bg-secondary"><TableCell colSpan={14} className="py-4"><strong>{customer[0]?.first_name} {customer[0]?.last_name}</strong><span className="ml-4 text-muted-foreground">{customer[0]?.email} · {customer.length} bestelling(en)</span></TableCell></TableRow>
                     {customer.map((p) => (
                   <TableRow key={p.id} className="border-foreground hover:bg-secondary">
@@ -350,7 +350,7 @@ const Admin = () => {
                     </TableCell>
                   </TableRow>
                     ))}
-                  </tbody>
+                  </Fragment>
                 ))
               )}
             </TableBody>
