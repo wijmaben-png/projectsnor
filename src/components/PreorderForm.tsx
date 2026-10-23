@@ -489,7 +489,7 @@ export const PreorderForm = () => {
       </Button>
 
       <p className="text-xs text-muted-foreground text-center">
-        Let op: omdat dit een speciale pre-order is, is retourneren niet mogelijk.
+        Let op: omdat dit een speciale pre-order is, is retourneren niet mogelijk. De foto's geven de artikelen zo goed mogelijk weer, maar kleur en details kunnen iets afwijken.
       </p>
     </form>
   );

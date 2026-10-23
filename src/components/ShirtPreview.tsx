@@ -1,21 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import blackFront from "@/assets/shirt-black-front.png";
-import blackBack from "@/assets/shirt-black-back.png";
-import whiteFront from "@/assets/shirt-white-front.png";
-import whiteBack from "@/assets/shirt-white-back.png";
 import longsleeveWhiteFront from "@/assets/longsleeve-white-front.png.asset.json";
 import longsleeveWhiteBack from "@/assets/longsleeve-white-back.png.asset.json";
 import longsleeveBlackFront from "@/assets/longsleeve-black-front-correct.png.asset.json";
 import longsleeveBlackBack from "@/assets/longsleeve-black-back-correct.png.asset.json";
-import capFront from "@/assets/cap-front.png.asset.json";
+import walkingBlackBack from "@/assets/walkinteeachterkantzwart.webp.asset.json";
+import walkingWhiteBack from "@/assets/walkingteebackwit.webp.asset.json";
 import capSide from "@/assets/cap-side.png.asset.json";
+import capOgBack from "@/assets/acherkantpethoofdbone.png.asset.json";
+import psBlueFront from "@/assets/voorkantpetps.png.asset.json";
+import psBlueSide from "@/assets/zijkantpet2ps.png.asset.json";
+import psBoneFront from "@/assets/voorkantpetpsbone.png.asset.json";
+import psBoneSide from "@/assets/zijkantpetpsbone.png.asset.json";
 
 const SHIRTS = [
-  { color: "black", label: "Zwart", front: blackFront, back: blackBack },
-  { color: "white", label: "Wit", front: whiteFront, back: whiteBack },
-  { color: "longsleeve-white", label: "Snorrig hart - wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url },
-  { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url },
-  { color: "cap", label: "Pet OG", front: capFront.url, back: capSide.url },
+  { color: "longsleeve-walking-black", label: "Snorrig Walking Tee - zwart", front: longsleeveBlackFront.url, back: walkingBlackBack.url, backLabel: "achterkant" },
+  { color: "longsleeve-walking-white", label: "Snorrig Walking Tee - wit", front: longsleeveWhiteFront.url, back: walkingWhiteBack.url, backLabel: "achterkant" },
+  { color: "longsleeve-white", label: "Snorrig hart - wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url, backLabel: "achterkant" },
+  { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url, backLabel: "achterkant" },
+  { color: "cap", label: "Pet OG", front: capSide.url, back: capOgBack.url, backLabel: "achterkant" },
+  { color: "cap-ps-blue", label: "Pet PS - blauw", front: psBlueFront.url, back: psBlueSide.url, backLabel: "zijkant" },
+  { color: "cap-ps-bone", label: "Pet PS - bone", front: psBoneFront.url, back: psBoneSide.url, backLabel: "zijkant" },
 ] as const;
 
 const FLIP_BACK_MS = 2500;
