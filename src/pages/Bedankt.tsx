@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { PixelImage } from "@/components/PixelImage";
 import { supabase } from "@/integrations/supabase/client";
 import portrait from "@/assets/project-snor-portrait.png";
-import { orderItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
+import { orderItems, variantLabel, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 
 interface Order {
   first_name: string;
@@ -93,7 +93,7 @@ const Bedankt = () => {
             <div className="mt-10 w-full max-w-md border border-foreground p-6">
               <h2 className="font-display italic text-xl mb-4">Je bestelling</h2>
               <ul className="space-y-2 text-sm">
-                {orderItems(order).map((item, index) => <li key={index}><strong>{item.quantity}× {item.product_name}</strong>{item.product_type !== "cap" && ` — ${item.tshirt_size} · ${item.tshirt_color === "black" ? "Zwart" : "Wit"}`}</li>)}
+                {orderItems(order).map((item, index) => <li key={index}><strong>{item.quantity}× {item.product_name}</strong>{` — ${variantLabel(item)}`}</li>)}
                 <li><span className="uppercase tracking-wide text-muted-foreground">Bezorging:</span> <strong>{deliveryLabel}</strong></li>
                 <li>
                   <span className="uppercase tracking-wide text-muted-foreground">Betaald:</span>{" "}

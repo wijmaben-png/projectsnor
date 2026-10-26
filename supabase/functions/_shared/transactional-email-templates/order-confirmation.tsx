@@ -1,3 +1,4 @@
+import { variantLabel } from '../merch-catalog.ts'
 import * as React from 'npm:react@18.3.1'
 import {
   Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
@@ -55,7 +56,7 @@ const OrderConfirmationEmail = ({
           <Section style={orderBox}>
             <Text style={orderTitle}>Je bestelling</Text>
             {order_items.length ? order_items.map((item, index) => (
-              <Text key={index} style={orderItem}><strong>{item.quantity}× {item.product_name}</strong>{item.product_type !== 'cap' ? ` — ${item.tshirt_size}, ${item.tshirt_color === 'black' ? 'Zwart' : 'Wit'}` : ''}</Text>
+              <Text key={index} style={orderItem}><strong>{item.quantity}× {item.product_name}</strong>{` — ${variantLabel(item)}`}</Text>
             )) : <>
               <Text style={orderItem}>Product: <strong>{productLabel}</strong></Text>
               {!isCap && <Text style={orderItem}>Maat: <strong>{tshirt_size}</strong></Text>}
