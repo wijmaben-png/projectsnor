@@ -262,6 +262,7 @@ export const PreorderForm = () => {
         <Label className="text-sm uppercase tracking-wide">Product</Label>
         <RadioGroup
           value={form.product_type}
+          onValueChange={(v) => setForm((f) => ({ ...f, product_type: v as Product, tshirt_size: "", tshirt_color: "" }))}
           onValueChange={(v) => updateField("product_type", v)}
           className={cn(
             "flex flex-col gap-2 p-3 border",
@@ -309,52 +310,53 @@ export const PreorderForm = () => {
           aria-invalid={errors.has("phone")} className={inputClass("phone")} />
       </div>
 
-      {!isCap && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="tshirt_size" className="text-sm uppercase tracking-wide">Maat</Label>
-            <Select value={form.tshirt_size} onValueChange={(v) => updateField("tshirt_size", v)}>
-              <SelectTrigger id="tshirt_size" aria-invalid={errors.has("tshirt_size")}
-                className={inputClass("tshirt_size")}>
-                <SelectValue placeholder="Kies een maat" />
-              </SelectTrigger>
-              <SelectContent>
-                {SIZES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+      {product && product.sizes.length > 1 && (
+        <div className="space-y-2">
+          <Label htmlFor="tshirt_size" className="text-sm uppercase tracking-wide">Maat</Label>
+          <Select value={form.tshirt_size} onValueChange={(v) => updateField("tshirt_size", v)}>
+            <SelectTrigger id="tshirt_size" className={inputClass("tshirt_size")}>
+              <SelectValue placeholder="Kies een maat" />
+            </SelectTrigger>
+            <SelectContent>
+              {product.sizes.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      {product && product.sizes.length === 1 && <p className="text-sm text-muted-foreground">Maat: one size</p>}
 
-          <div className="space-y-2">
-            <Label className="text-sm uppercase tracking-wide">Kleur</Label>
-            <RadioGroup
-              value={form.tshirt_color}
-              onValueChange={(v) => updateField("tshirt_color", v)}
-              className={cn(
-                "flex gap-3 p-3 border",
-                errors.has("tshirt_color") ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
-              )}
-            >
-              <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="black" id="color-black" className="rounded-none" />
-                <span className="text-sm">Zwart</span>
+      {product && product.colors.length > 1 && (
+        <div className="space-y-2">
+          <Label className="text-sm uppercase tracking-wide">Kleur</Label>
+          <RadioGroup value={form.tshirt_color} onValueChange={(v) => updateField("tshirt_color", v)}
+            className="flex gap-3 p-3 border border-foreground">
+            {product.colors.map((c) => (
+              <label key={c} className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value={c} id={`color-${c}`} className="rounded-none" />
+                <span className="text-sm">{COLOR_LABELS[c]}</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="white" id="color-white" className="rounded-none" />
-                <span className="text-sm">Wit</span>
-              </label>
-            </RadioGroup>
-          </div>
-        </>
+            ))}
+          </RadioGroup>
+        </div>
       )}
 
       <Button type="button" variant="outline" className="w-full rounded-none border-foreground" onClick={() => {
         try {
-          const item = { product_model: form.product_type, tshirt_size: isCap ? "ONE" : form.tshirt_size, tshirt_color: isCap ? "none" : form.tshirt_color, quantity: 1 };
+          if (!product) throw new Error("Kies eerst een product.");
+          const item = {
+            product_model: product.id,
+            tshirt_size: product.sizes.length === 1 ? product.sizes[0] : form.tshirt_size,
+            tshirt_color: product.colors.length === 1 ? product.colors[0] : form.tshirt_color,
+            quantity: 1,
+          };
+          if (!item.tshirt_size) throw new Error("Kies een maat.");
+          if (!item.tshirt_color) throw new Error("Kies een kleur.");
           priceItems([item]);
           setCart((current) => {
             const index = current.findIndex((i) => i.product_model === item.product_model && i.tshirt_size === item.tshirt_size && i.tshirt_color === item.tshirt_color);
             return index < 0 ? [...current, item] : current.map((i, n) => n === index ? { ...i, quantity: i.quantity + 1 } : i);
           });
+          toast({ title: "Toegevoegd", description: `${product.label} zit in je winkelmand.` });
         } catch (error) { toast({ title: "Kies je artikel", description: error instanceof Error ? error.message : "Kies een product, maat en kleur." }); }
       }}><Plus /> Toevoegen aan winkelmand</Button>
 
@@ -363,8 +365,8 @@ export const PreorderForm = () => {
         {!cart.length && <p className="text-sm text-muted-foreground">Je winkelmand is leeg.</p>}
         {cart.length > 0 && priceItems(cart).map((item, index) => (
           <div key={`${item.product_model}-${item.tshirt_size}-${item.tshirt_color}`} className="flex items-center gap-3 text-sm">
-            <div className="flex-1 min-w-0"><p className="font-bold">{item.product_name}</p>{item.product_type !== "cap" && <p>{item.tshirt_size} · {item.tshirt_color === "black" ? "Zwart" : "Wit"}</p>}</div>
-            <Input aria-label={`Aantal ${item.product_name}`} type="number" min={1} value={item.quantity} className="w-16 rounded-none border-foreground" onChange={(e) => { const quantity = Number(e.target.value); if (Number.isInteger(quantity) && quantity > 0) setCart((items) => items.map((i, n) => n === index ? { ...i, quantity } : i)); }} />
+            <div className="flex-1 min-w-0"><p className="font-bold">{item.product_name}</p><p>{variantLabel(item)}</p></div>
+            <Input aria-label={`Aantal ${item.product_name}`} type="number" min={1} max={20} value={item.quantity} className="w-16 rounded-none border-foreground" onChange={(e) => { const quantity = Number(e.target.value); if (Number.isInteger(quantity) && quantity > 0 && quantity <= 20) setCart((items) => items.map((i, n) => n === index ? { ...i, quantity } : i)); }} />
             <span>€{fmt(item.unit_price * item.quantity)}</span>
             <Button type="button" variant="ghost" size="icon" title="Verwijder artikel" aria-label={`Verwijder ${item.product_name}`} onClick={() => setCart((items) => items.filter((_, n) => n !== index))}><Trash2 /></Button>
           </div>
