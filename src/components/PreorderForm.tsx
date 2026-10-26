@@ -275,35 +275,6 @@ export const PreorderForm = () => {
         </RadioGroup>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="first_name" className="text-sm uppercase tracking-wide">Voornaam</Label>
-          <Input id="first_name" type="text" maxLength={100} value={form.first_name}
-            onChange={(e) => updateField("first_name", e.target.value)}
-            aria-invalid={errors.has("first_name")} className={inputClass("first_name")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="last_name" className="text-sm uppercase tracking-wide">Achternaam</Label>
-          <Input id="last_name" type="text" maxLength={100} value={form.last_name}
-            onChange={(e) => updateField("last_name", e.target.value)}
-            aria-invalid={errors.has("last_name")} className={inputClass("last_name")} />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm uppercase tracking-wide">E-mailadres</Label>
-        <Input id="email" type="email" maxLength={255} value={form.email}
-          onChange={(e) => updateField("email", e.target.value)}
-          aria-invalid={errors.has("email")} className={inputClass("email")} />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="text-sm uppercase tracking-wide">Telefoonnummer</Label>
-        <Input id="phone" type="tel" maxLength={20} value={form.phone}
-          onChange={(e) => updateField("phone", e.target.value)}
-          aria-invalid={errors.has("phone")} className={inputClass("phone")} />
-      </div>
-
       {product && product.sizes.length > 1 && (
         <div className="space-y-2">
           <Label htmlFor="tshirt_size" className="text-sm uppercase tracking-wide">Maat</Label>
@@ -366,6 +337,35 @@ export const PreorderForm = () => {
           </div>
         ))}
       </section>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="first_name" className="text-sm uppercase tracking-wide">Voornaam</Label>
+          <Input id="first_name" type="text" maxLength={100} value={form.first_name}
+            onChange={(e) => updateField("first_name", e.target.value)}
+            aria-invalid={errors.has("first_name")} className={inputClass("first_name")} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="last_name" className="text-sm uppercase tracking-wide">Achternaam</Label>
+          <Input id="last_name" type="text" maxLength={100} value={form.last_name}
+            onChange={(e) => updateField("last_name", e.target.value)}
+            aria-invalid={errors.has("last_name")} className={inputClass("last_name")} />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm uppercase tracking-wide">E-mailadres</Label>
+        <Input id="email" type="email" maxLength={255} value={form.email}
+          onChange={(e) => updateField("email", e.target.value)}
+          aria-invalid={errors.has("email")} className={inputClass("email")} />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="phone" className="text-sm uppercase tracking-wide">Telefoonnummer</Label>
+        <Input id="phone" type="tel" maxLength={20} value={form.phone}
+          onChange={(e) => updateField("phone", e.target.value)}
+          aria-invalid={errors.has("phone")} className={inputClass("phone")} />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="discount_code" className="text-sm uppercase tracking-wide">Kortingscode (optioneel)</Label>
@@ -456,7 +456,7 @@ export const PreorderForm = () => {
           )}
           {form.delivery_method === "pickup" && (
             <div className="flex justify-between text-muted-foreground">
-              <span>Ophalen bij het Snorrenfeest</span>
+              <span>Ophalen op Project Snor Feest 2.0</span>
               <span>Gratis</span>
             </div>
           )}
