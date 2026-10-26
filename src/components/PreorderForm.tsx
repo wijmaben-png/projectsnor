@@ -14,17 +14,17 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { MERCH_PRODUCTS, priceItems, itemSubtotal, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
+import { MERCH_PRODUCTS, COLOR_LABELS, priceItems, itemSubtotal, variantLabel, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Plus, Trash2 } from "lucide-react";
 
 const SIZES = ["S", "M", "L", "XL"] as const;
-type Size = (typeof SIZES)[number];
+type Size = string;
 
 const COLORS = ["black", "white"] as const;
-type Color = (typeof COLORS)[number];
+type Color = string;
 
 const PRODUCTS = MERCH_PRODUCTS.filter((p) => p.available && p.price !== null);
-type Product = (typeof PRODUCTS)[number]["id"];
+type Product = string;
 
 const DISCOUNT_AMOUNT = 3.0;
 
@@ -88,7 +88,6 @@ export const PreorderForm = () => {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const isCap = PRODUCTS.find((p) => p.id === form.product_type)?.type === "cap";
 
   // Fetch live shipping cost from Sendcloud when "shipping" is selected
   useEffect(() => {
@@ -162,11 +161,7 @@ export const PreorderForm = () => {
       return;
     }
 
-    const payload = {
-      ...form,
-      tshirt_size: isCap ? "ONE" : form.tshirt_size,
-      tshirt_color: isCap ? "none" : form.tshirt_color,
-    };
+    const payload = form;
 
     const parsed = baseSchema.safeParse({
       ...payload,
@@ -263,7 +258,6 @@ export const PreorderForm = () => {
         <RadioGroup
           value={form.product_type}
           onValueChange={(v) => setForm((f) => ({ ...f, product_type: v as Product, tshirt_size: "", tshirt_color: "" }))}
-          onValueChange={(v) => updateField("product_type", v)}
           className={cn(
             "flex flex-col gap-2 p-3 border",
             errors.has("product_type") ? "border-2 border-foreground ring-2 ring-foreground" : "border-foreground",
@@ -409,7 +403,7 @@ export const PreorderForm = () => {
         >
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="pickup" id="dm-pickup" className="rounded-none" />
-            <span className="text-sm">Ophalen bij het Snorrenfeest 12 december</span>
+            <span className="text-sm">Ophalen bij Project Snor Feest 2.0 op 12 december</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <RadioGroupItem value="shipping" id="dm-ship" className="rounded-none" />
