@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { MERCH_PRODUCTS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
+import { MERCH_PRODUCTS, COLOR_LABELS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Preorder = {
@@ -39,7 +39,7 @@ type Preorder = {
 };
 
 type Filter = "all" | "pickup" | "shipping";
-type ColorFilter = "all" | "black" | "white";
+type ColorFilter = "all" | "black" | "white" | "blue" | "bone";
 type ProductFilter = "all" | "shirt" | "longsleeve" | "cap";
 const productLabel = (t: string) => t === "cap" ? "Pet" : t === "longsleeve" ? "Longsleeve" : "Shirt";
 
@@ -164,7 +164,7 @@ const Admin = () => {
     .filter((p) => matchesItems(orderItems(p), productFilter, modelFilter, colorFilter));
   const customers = groupCustomers(filtered);
   const itemCounts = filtered.flatMap((p) => orderItems(p)).filter((item) => matchesItems([item], productFilter, modelFilter, colorFilter)).reduce<Record<string, number>>((totals, item) => {
-    const key = `${item.product_name}${item.product_type === "cap" ? "" : ` · ${item.tshirt_color === "black" ? "Zwart" : "Wit"} · ${item.tshirt_size}`}`;
+    const key = [item.product_name, COLOR_LABELS[item.tshirt_color], item.tshirt_size === "ONE" ? "" : item.tshirt_size].filter(Boolean).join(" · ");
     totals[key] = (totals[key] ?? 0) + item.quantity;
     return totals;
   }, {});
@@ -250,6 +250,8 @@ const Admin = () => {
             {colorBtn("Alle kleuren", "all")}
             {colorBtn("Zwart", "black")}
             {colorBtn("Wit", "white")}
+            {colorBtn("Blauw", "blue")}
+            {colorBtn("Bone", "bone")}
             <span className="w-px h-8 bg-foreground/30" />
             {([["Alle producten","all"],["Shirts","shirt"],["Longsleeves","longsleeve"],["Petten","cap"]] as [string, ProductFilter][]).map(([l, v]) => (
               <Button key={v} variant="outline" onClick={() => setProductFilter(v)}
@@ -315,7 +317,7 @@ const Admin = () => {
                     <TableCell className="text-sm whitespace-nowrap">{orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.quantity}× {item.product_name}</div>)}</TableCell>
                     <TableCell className="text-sm font-bold">{orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.product_type === "cap" ? "—" : item.tshirt_size}</div>)}</TableCell>
                     <TableCell className="text-sm">
-                      {orderItems(p).map((item, i) => <div key={i} className="min-h-6">{item.tshirt_color === "black" ? "Zwart" : item.tshirt_color === "white" ? "Wit" : "—"}</div>)}
+                      {orderItems(p).map((item, i) => <div key={i} className="min-h-6">{COLOR_LABELS[item.tshirt_color] || "—"}</div>)}
                     </TableCell>
                     <TableCell className="text-sm">
                       {p.delivery_method === "shipping" ? "Verzenden" : "Ophalen"}
