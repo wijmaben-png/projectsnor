@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MERCH_PRODUCTS, COLOR_LABELS, priceItems, itemSubtotal, variantLabel, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
-import { Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 
 const SIZES = ["S", "M", "L", "XL"] as const;
 type Size = string;
@@ -87,6 +87,7 @@ export const PreorderForm = () => {
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [addQty, setAddQty] = useState(1);
 
 
   // Fetch live shipping cost from Sendcloud when "shipping" is selected
@@ -305,6 +306,17 @@ export const PreorderForm = () => {
         </div>
       )}
 
+      {product && (
+        <div className="space-y-2">
+          <Label className="text-sm uppercase tracking-wide">Aantal</Label>
+          <div className="flex items-center border border-foreground w-fit">
+            <Button type="button" variant="ghost" size="icon" className="rounded-none" aria-label="Minder" disabled={addQty <= 1} onClick={() => setAddQty((q) => Math.max(1, q - 1))}><Minus /></Button>
+            <span className="w-10 text-center font-bold" aria-live="polite">{addQty}</span>
+            <Button type="button" variant="ghost" size="icon" className="rounded-none" aria-label="Meer" disabled={addQty >= 20} onClick={() => setAddQty((q) => Math.min(20, q + 1))}><Plus /></Button>
+          </div>
+        </div>
+      )}
+
       <Button type="button" variant="outline" className="w-full rounded-none border-foreground" onClick={() => {
         try {
           if (!product) throw new Error("Kies eerst een product.");
@@ -312,16 +324,17 @@ export const PreorderForm = () => {
             product_model: product.id,
             tshirt_size: product.sizes.length === 1 ? product.sizes[0] : form.tshirt_size,
             tshirt_color: product.colors.length === 1 ? product.colors[0] : form.tshirt_color,
-            quantity: 1,
+            quantity: addQty,
           };
           if (!item.tshirt_size) throw new Error("Kies een maat.");
           if (!item.tshirt_color) throw new Error("Kies een kleur.");
           priceItems([item]);
           setCart((current) => {
             const index = current.findIndex((i) => i.product_model === item.product_model && i.tshirt_size === item.tshirt_size && i.tshirt_color === item.tshirt_color);
-            return index < 0 ? [...current, item] : current.map((i, n) => n === index ? { ...i, quantity: i.quantity + 1 } : i);
+            return index < 0 ? [...current, item] : current.map((i, n) => n === index ? { ...i, quantity: Math.min(20, i.quantity + addQty) } : i);
           });
-          toast({ title: "Toegevoegd", description: `${product.label} zit in je winkelmand.` });
+          toast({ title: "Toegevoegd", description: `${addQty}× ${product.label} zit in je winkelmand.` });
+          setAddQty(1);
         } catch (error) { toast({ title: "Kies je artikel", description: error instanceof Error ? error.message : "Kies een product, maat en kleur." }); }
       }}><Plus /> Toevoegen aan winkelmand</Button>
 
