@@ -15,7 +15,7 @@ const Tickets = () => (
       <p className="font-semibold flex items-center justify-center gap-2"><MapPin className="size-4 shrink-0" />Club Ping Pong Utrecht</p>
       <p className="mt-2 text-sm text-muted-foreground">Concordiastraat 80<br />3551 EM Utrecht</p>
     </address>
-    <div className="mt-8 flex flex-col items-center gap-3"><Ticket className="size-7" /><p className="text-center text-muted-foreground">De ticketverkoop is nog niet geopend.</p></div>
+    <Button asChild size="lg" className="mt-8 rounded-none"><a href="https://project-snor.tickable.nl/project-snor-feest-2-0" target="_blank" rel="noopener noreferrer"><Ticket /> Koop tickets</a></Button>
     <footer className="mt-auto pt-12 text-xs uppercase tracking-widest text-muted-foreground">© Project Snor</footer>
   </main>
 );
