@@ -250,7 +250,6 @@ const Admin = () => {
             {colorBtn("Alle kleuren", "all")}
             {colorBtn("Zwart", "black")}
             {colorBtn("Wit", "white")}
-            {colorBtn("Blauw", "blue")}
             {colorBtn("Bone", "bone")}
             <span className="w-px h-8 bg-foreground/30" />
             {([["Alle producten","all"],["Shirts","shirt"],["Longsleeves","longsleeve"],["Petten","cap"]] as [string, ProductFilter][]).map(([l, v]) => (
