@@ -17,7 +17,7 @@ describe("merch orders", () => {
   it("requires Pet PS colour blue or bone", () => {
     expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "none", quantity: 1 }])).toThrow();
     expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "black", quantity: 1 }])).toThrow();
-    expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "blue", quantity: 1 }])).not.toThrow();
+    expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "blue", quantity: 1 }])).toThrow();
   });
   it("no longer sells the short-sleeve shirt", () => {
     expect(() => priceItems([{ product_model: "shirt", tshirt_size: "M", tshirt_color: "black", quantity: 1 }])).toThrow();
@@ -28,7 +28,7 @@ describe("merch orders", () => {
     expect(groups.map((g) => g.map((o) => o.id))).toEqual([[1, 2], [3]]);
   });
   it("filters by the model and variant of the same article", () => {
-    const items = priceItems([{ product_model: "snorrig-hart", tshirt_size: "M", tshirt_color: "black", quantity: 1 }, { product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "blue", quantity: 1 }]);
+    const items = priceItems([{ product_model: "snorrig-hart", tshirt_size: "M", tshirt_color: "black", quantity: 1 }, { product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "bone", quantity: 1 }]);
     expect(matchesItems(items, "cap", "pet-ps", "blue")).toBe(true);
     expect(matchesItems(items, "cap", "pet-ps", "bone")).toBe(false);
   });
