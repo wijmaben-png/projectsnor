@@ -1,3 +1,4 @@
+export const ORDERS_OPEN = false;
 export const COLOR_LABELS: Record<string, string> = { black: "Zwart", white: "Wit", blue: "Blauw", bone: "Bone", none: "" };
 
 type Product = { id: string; type: "shirt" | "longsleeve" | "cap"; label: string; price: number | null; available: boolean; sizes: readonly string[]; colors: readonly string[] };
@@ -21,6 +22,7 @@ export function variantLabel(item: { tshirt_size: string; tshirt_color: string }
 }
 
 export function priceItems(items: CartItem[]): OrderItem[] {
+  if (!ORDERS_OPEN) throw new Error("Bestellen is nog niet mogelijk.");
   if (items.length === 0) throw new Error("Kies ten minste één artikel.");
   return items.map((item) => {
     const product = MERCH_PRODUCTS.find((p) => p.id === item.product_model);

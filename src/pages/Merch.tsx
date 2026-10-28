@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShirtPreview } from "@/components/ShirtPreview";
-import { PreorderForm } from "@/components/PreorderForm";
 
 const Merch = () => (
   <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-10">
@@ -13,7 +12,10 @@ const Merch = () => (
       <p className="mt-3 text-sm md:text-base text-center max-w-md text-muted-foreground">Beperkte oplage, dus wees er snor bij.</p>
       <div className="mt-8 flex justify-center w-full"><ShirtPreview /></div>
     </section>
-    <section className="w-full max-w-md mt-10 mb-16"><PreorderForm /></section>
+    <section className="w-full max-w-md mt-10 mb-16 border border-foreground p-8 text-center">
+      <h2 className="font-title text-3xl md:text-4xl">Coming soon</h2>
+      <p className="mt-3 text-sm md:text-base text-muted-foreground">Bestellen is nog niet mogelijk. Hou deze pagina in de gaten, we gaan snel open.</p>
+    </section>
     <footer className="mt-auto pt-8 text-xs uppercase tracking-widest text-muted-foreground">© Project Snor</footer>
   </main>
 );
