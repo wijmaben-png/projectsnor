@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
-import { priceItems, itemSubtotal } from "../_shared/merch-catalog.ts";
+import { priceItems, itemSubtotal, ORDERS_OPEN } from "../_shared/merch-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +38,10 @@ const BodySchema = z.object({
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  if (!ORDERS_OPEN) {
+    return new Response(JSON.stringify({ error: "Bestellen is nog niet mogelijk." }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
 
   try {
     const MOLLIE_API_KEY = Deno.env.get("MOLLIE_API_KEY");
