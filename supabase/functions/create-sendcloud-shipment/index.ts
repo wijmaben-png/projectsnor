@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
 
     console.log("Sendcloud v3 request payload:", JSON.stringify(shipmentPayload, null, 2));
 
-    const scRes = await fetch("https://panel.sendcloud.sc/api/v3/shipments", {
+    const scRes = await fetch("https://panel.sendcloud.sc/api/v3/shipments/announce", {
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json" },
       body: JSON.stringify(shipmentPayload),
@@ -179,12 +179,18 @@ Deno.serve(async (req) => {
     }
 
     // Parse v3 response — single shipment object
-    const shipment = scData;
+    const shipment = scData?.data ?? scData;
+    const parcel = shipment?.parcels?.[0] ?? {};
 
-    const parcelId = String(shipment?.id ?? "");
-    const trackingNumber = shipment?.tracking_number || null;
-    const trackingUrl = shipment?.tracking_url || null;
-    const labelUrl = shipment?.label?.normal_printer || shipment?.label_url || null;
+    const parcelId = String(parcel?.id ?? shipment?.id ?? "");
+    const trackingNumber = parcel?.tracking_number || shipment?.tracking_number || null;
+    const trackingUrl = parcel?.tracking_url || shipment?.tracking_url || null;
+    const labelUrl = parcel?.documents?.find((d: any) => d.type === "label")?.link || null;
+    if (!parcelId) {
+      return new Response(JSON.stringify({ error: "sendcloud_unexpected_response", details: scData }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     console.log("Parsed shipment:", { parcelId, trackingNumber, trackingUrl, labelUrl });
 
