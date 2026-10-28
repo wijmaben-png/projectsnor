@@ -209,7 +209,10 @@ export const PreorderForm = () => {
           setSubmitting(false);
           return;
         }
-        throw new Error(error.message);
+        const friendly = body?.error && !/[_]/.test(body.error) && body.error.length < 120
+          ? body.error
+          : "Het afrekenen lukte niet. Probeer het opnieuw of stuur ons een berichtje.";
+        throw new Error(friendly);
       }
 
       if (data?.checkout_url) {
