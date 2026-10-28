@@ -22,7 +22,6 @@ export function variantLabel(item: { tshirt_size: string; tshirt_color: string }
 }
 
 export function priceItems(items: CartItem[]): OrderItem[] {
-  if (!ORDERS_OPEN) throw new Error("Bestellen is nog niet mogelijk.");
   if (items.length === 0) throw new Error("Kies ten minste één artikel.");
   return items.map((item) => {
     const product = MERCH_PRODUCTS.find((p) => p.id === item.product_model);
