@@ -3,6 +3,7 @@
 - Keep `preorders` as the order header for payment and shipping compatibility; store validated item snapshots in `order_items` so a single payment and parcel can contain multiple models and quantities.
 - Use the dependency-free shared merchandise catalogue for frontend choices and authoritative server pricing; models without confirmed imagery and pricing are not purchasable.
 - Calculate discounts and order totals through the shared catalogue pricing helper on both frontend and payment server, rounding to integer cents before adding shipping to prevent checkout discrepancies.
+- Derive parcel weight and mailbox eligibility from complete order items through the shared shipping helper, and use one Sendcloud quote selector for cart estimates, payment and labels; reject unavailable quotes instead of charging a misleading fixed fallback. Packing allowance and outer dimensions are provisional until measured.
 - Group admin orders by normalized customer email and retain each order's complete items when filtering, so fulfillment never loses companion products.
 - Calculate admin model/color/size summaries in a pure order-summary module, separating paid quantities from unpaid and distinct order counts so procurement totals are unambiguous.
 - Send order confirmations through the managed template helper from the verified payment webhook, retaining historical email audit writes and signed outcome-event records; leave standalone third-party confirmation and tracking senders unchanged.
