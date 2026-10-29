@@ -1,5 +1,5 @@
 # Taken
-- [ ] E-mailupdate: bestelbevestiging omzetten, historische e-maillogs behouden, ontvanger voor e-mailgebeurtenissen toevoegen en oude e-mailbestanden verwijderen; niet publiceren.
+- [x] E-mailupdate: bestelbevestiging omgezet, historische e-maillogs behouden, ondertekende e-mailgebeurtenissen toegevoegd en oude e-mailbestanden verwijderd. E-mailtests, controles en weigering van ongetekende gebeurtenissen geslaagd; geen echte mail verstuurd, niet gepubliceerd. Losse Resend-bevestiging en trackingmails blijven ongewijzigd.
 - [x] Adminoverzicht per model/kleur/maat met betaalde stuks, bestellingen en onbetaalde aantallen; tests en ingelogd modelfilter gecontroleerd. Betaalde testbestelling Ben Wijma en artikelen verwijderd; extern Sendcloud-label niet geannuleerd.
 - [x] Startpagina met Project Snor, hoofd, Tickets en Snorre merch; aparte merch- en ticketpagina.
 - [x] Productmodellen en meerdere artikelen per bestelling opslaan, met behoud van bestaande bestellingen.
