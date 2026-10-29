@@ -7,4 +7,4 @@
 - [x] Pet PS en Snorrig Walking Tee voorzien van foto’s, prijzen en varianten.
 - [x] Pet PS zwart toegevoegd aan productfoto’s, bestelkeuzes en gevalideerde ordergegevens; catalogustests en winkelmandcontrole geslaagd, verkoop blijft gesloten. Werkelijke orderopslag niet uitgevoerd vanwege gesloten verkoop; lokale fotocontrole gebruikte aangeleverde bestanden omdat CDN-weergave lokaal niet beschikbaar is.
 - [x] Beide PS-petten naast elkaar geplaatst met Pet OG daaronder; posities gecontroleerd in het voorbeeld.
-- [ ] Zwarte shirts onder elkaar plaatsen met de witte shirts ernaast en de positie controleren.
+- [x] Zwarte shirts onder elkaar geplaatst met de witte shirts ernaast; uitlijning en behouden petindeling gecontroleerd.
