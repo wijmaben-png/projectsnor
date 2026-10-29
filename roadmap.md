@@ -5,4 +5,4 @@
 - [x] Tests en controle van pagina’s, bestelroute tot betaalpagina en teruglezen in het klantoverzicht; geen echte betaling uitgevoerd.
 - [x] Ticketverkoop gekoppeld aan de aangeleverde Tickable-link.
 - [x] Pet PS en Snorrig Walking Tee voorzien van foto’s, prijzen en varianten.
-- [ ] Pet PS zwart toevoegen aan productfoto’s, bestelkeuzes en gevalideerde ordergegevens; bestellen gesloten houden en controles uitvoeren.
+- [x] Pet PS zwart toegevoegd aan productfoto’s, bestelkeuzes en gevalideerde ordergegevens; catalogustests en winkelmandcontrole geslaagd, verkoop blijft gesloten. Werkelijke orderopslag niet uitgevoerd vanwege gesloten verkoop; lokale fotocontrole gebruikte aangeleverde bestanden omdat CDN-weergave lokaal niet beschikbaar is.
