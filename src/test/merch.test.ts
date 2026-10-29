@@ -11,11 +11,10 @@ describe("merch orders", () => {
       { product_model: "pet-og", tshirt_size: "ONE", tshirt_color: "none", quantity: 1 },
     ]);
     expect(items.map((i) => i.product_name)).toEqual(["Snorrig Hart", "Pet OG"]);
-    expect(itemSubtotal(items)).toBe(79.98);
+    expect(itemSubtotal(items)).toBe(2);
   });
-  it("prices Walking Tee at 44.99 and Pet PS at 34.99", () => {
-    expect(priceItems([{ product_model: "snorrig-walking-tee", tshirt_size: "M", tshirt_color: "black", quantity: 1 }])[0].unit_price).toBe(44.99);
-    expect(priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "bone", quantity: 1 }])[0].unit_price).toBe(34.99);
+  it.each(MERCH_PRODUCTS.filter((p) => p.available))("temporarily prices $label at 1 euro per item", (product) => {
+    expect(priceItems([{ product_model: product.id, tshirt_size: product.sizes[0], tshirt_color: product.colors[0], quantity: 2 }])[0].unit_price).toBe(1);
   });
   it("sells Pet PS only in bone or black, not blue", () => {
     expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "none", quantity: 1 }])).toThrow();
@@ -24,7 +23,7 @@ describe("merch orders", () => {
   });
   it("preserves black Pet PS order snapshots with one size and the cap price", () => {
     expect(priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "black", quantity: 2 }])).toEqual([
-      { product_model: "pet-ps", product_type: "cap", product_name: "Pet PS", tshirt_size: "ONE", tshirt_color: "black", quantity: 2, unit_price: 34.99 },
+      { product_model: "pet-ps", product_type: "cap", product_name: "Pet PS", tshirt_size: "ONE", tshirt_color: "black", quantity: 2, unit_price: 1 },
     ]);
   });
   it("no longer sells the short-sleeve shirt", () => {
