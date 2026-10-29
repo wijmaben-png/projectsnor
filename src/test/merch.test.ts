@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ORDERS_OPEN, MERCH_PRODUCTS, priceItems, itemSubtotal, groupCustomers, matchesItems } from "../../supabase/functions/_shared/merch-catalog";
+import { ORDERS_OPEN, MERCH_PRODUCTS, priceItems, itemSubtotal, orderPricing, groupCustomers, matchesItems } from "../../supabase/functions/_shared/merch-catalog";
 
 describe("merch orders", () => {
   it("temporarily opens ordering for the customer's payment test", () => {
@@ -11,10 +11,21 @@ describe("merch orders", () => {
       { product_model: "pet-og", tshirt_size: "ONE", tshirt_color: "none", quantity: 1 },
     ]);
     expect(items.map((i) => i.product_name)).toEqual(["Snorrig Hart", "Pet OG"]);
-    expect(itemSubtotal(items)).toBe(2);
+    expect(itemSubtotal(items)).toBe(79.98);
   });
-  it.each(MERCH_PRODUCTS.filter((p) => p.available))("temporarily prices $label at 1 euro per item", (product) => {
-    expect(priceItems([{ product_model: product.id, tshirt_size: product.sizes[0], tshirt_color: product.colors[0], quantity: 2 }])[0].unit_price).toBe(1);
+  it.each([ ["snorrig-hart", 44.99], ["snorrig-walking-tee", 44.99], ["pet-og", 34.99], ["pet-ps", 34.99] ] as const)("restores %s to %s euros", (id, expectedPrice) => {
+    const product = MERCH_PRODUCTS.find((p) => p.id === id);
+    if (!product) throw new Error("Missing product");
+    expect(priceItems([{ product_model: id, tshirt_size: product.sizes[0], tshirt_color: product.colors[0], quantity: 2 }])[0].unit_price).toBe(expectedPrice);
+  });
+  it("discounts the entire product subtotal by ten percent, rounded to cents", () => {
+    expect(orderPricing(124.97, true)).toEqual({ discount: 12.5, products: 112.47, total: 112.47 });
+  });
+  it("never discounts shipping costs", () => {
+    expect(orderPricing(124.97, true, 4.5)).toEqual({ discount: 12.5, products: 112.47, total: 116.97 });
+  });
+  it("does not discount products without a validated code", () => {
+    expect(orderPricing(124.97, false, 4.5)).toEqual({ discount: 0, products: 124.97, total: 129.47 });
   });
   it("sells Pet PS only in bone or black, not blue", () => {
     expect(() => priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "none", quantity: 1 }])).toThrow();
@@ -23,7 +34,7 @@ describe("merch orders", () => {
   });
   it("preserves black Pet PS order snapshots with one size and the cap price", () => {
     expect(priceItems([{ product_model: "pet-ps", tshirt_size: "ONE", tshirt_color: "black", quantity: 2 }])).toEqual([
-      { product_model: "pet-ps", product_type: "cap", product_name: "Pet PS", tshirt_size: "ONE", tshirt_color: "black", quantity: 2, unit_price: 1 },
+      { product_model: "pet-ps", product_type: "cap", product_name: "Pet PS", tshirt_size: "ONE", tshirt_color: "black", quantity: 2, unit_price: 34.99 },
     ]);
   });
   it("no longer sells the short-sleeve shirt", () => {
