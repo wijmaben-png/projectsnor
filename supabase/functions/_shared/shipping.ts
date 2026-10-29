@@ -32,16 +32,27 @@ export type ShippingOption = {
   code: string; name?: string; product?: { name?: string; code?: string };
   functionalities?: { form_factor?: string; last_mile?: string; returns?: boolean };
   contract?: { id?: number }; quote_error?: unknown;
+  max_dimensions?: { length?: string; width?: string; height?: string; unit?: string };
   quotes?: { price?: { total?: { value?: string; currency?: string } } }[];
 };
 
-export function chooseShippingOption(options: ShippingOption[], kind: "mailbox" | "parcel") {
+export function chooseShippingOption(options: ShippingOption[], kind: "mailbox" | "parcel", dimensions?: { length: string; width: string; height: string; unit: string }) {
   const candidates = options.flatMap((option) => {
     const name = `${option.code} ${option.name ?? ""} ${option.product?.name ?? ""}`.toLowerCase();
-    const mailbox = /brievenbus|mailbox|letterbox/.test(name) || option.functionalities?.form_factor === "letter";
+    const mailbox = /brievenbus|mailbox|letterbox/.test(name) || ["letter", "mailbox"].includes(option.functionalities?.form_factor ?? "");
     if (mailbox !== (kind === "mailbox") || option.functionalities?.returns || option.quote_error) return [];
-    if (option.functionalities?.last_mile !== "home_delivery") return [];
+    if (kind === "mailbox" ? !["mailbox", "home_delivery"].includes(option.functionalities?.last_mile ?? "") : option.functionalities?.last_mile !== "home_delivery") return [];
     if (kind === "parcel" && option.functionalities?.form_factor !== "parcel") return [];
+    if (dimensions) {
+      const edges = [Number(dimensions.length), Number(dimensions.width), Number(dimensions.height)].sort((a, b) => b - a);
+      const max = option.max_dimensions;
+      if (max?.unit === "cm") {
+        const limits = [Number(max.length), Number(max.width), Number(max.height)].sort((a, b) => b - a);
+        if (limits.some((limit, index) => Number.isFinite(limit) && limit > 0 && edges[index] > limit)) return [];
+      }
+      // Sendcloud can return the small-parcel product even when supplied dimensions exceed its 10L limit.
+      if ((/10\s*liter/.test(name) || option.product?.code === "postnl:small" || option.code === "postnl:small") && edges.reduce((volume, edge) => volume * edge, 1) > 10000) return [];
+    }
     const prices = (option.quotes ?? []).flatMap((quote) => {
       const total = quote.price?.total;
       const amount = Number(total?.value);

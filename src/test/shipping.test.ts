@@ -30,4 +30,14 @@ describe("shipping", () => {
   it("does not substitute a low fixed rate when no usable quote exists", () => {
     expect(() => chooseShippingOption([], "parcel")).toThrow();
   });
+  it("accepts the mailbox delivery functionality returned by Sendcloud", () => {
+    expect(chooseShippingOption([{ code: "postnl:brievenbus", functionalities: { form_factor: "mailbox", last_mile: "mailbox" }, quotes: [{ price: { total: { value: "4.65", currency: "EUR" } } }] }], "mailbox").cost).toBe(4.65);
+  });
+  it("rejects a 10 liter parcel option for a larger box", () => {
+    const options = [
+      { code: "postnl:small", functionalities: { form_factor: "parcel", last_mile: "home_delivery" }, quotes: [{ price: { total: { value: "7.08", currency: "EUR" } } }] },
+      { code: "postnl:standard", functionalities: { form_factor: "parcel", last_mile: "home_delivery" }, quotes: [{ price: { total: { value: "7.58", currency: "EUR" } } }] },
+    ];
+    expect(chooseShippingOption(options, "parcel", { length: "40", width: "30", height: "15", unit: "cm" }).option.code).toBe("postnl:standard");
+  });
 });

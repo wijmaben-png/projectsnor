@@ -25,7 +25,7 @@ export async function shippingQuote(items: ShippingItem[], postalCode?: string |
   const data = await res.json();
   const options = Array.isArray(data.data) ? data.data : [];
   let selected;
-  try { selected = chooseShippingOption(options, parcel.kind); }
+  try { selected = chooseShippingOption(options, parcel.kind, parcel.dimensions); }
   catch (error) {
     console.error("No matching shipping quote:", JSON.stringify({ kind: parcel.kind, options: options.map((o: { code?: string; name?: string; functionalities?: unknown; quotes?: unknown; quote_error?: unknown }) => ({ code: o.code, name: o.name, functionalities: o.functionalities, quotes: o.quotes, quote_error: o.quote_error })) }));
     throw error;
