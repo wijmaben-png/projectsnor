@@ -8,6 +8,7 @@ function equal(actual: unknown, expected: unknown) {
 Deno.test('keeps exact legacy statuses, reason strings and event deduplication', async () => {
   const requests: { table: string; body: Record<string, unknown> }[] = []
   const client = createClient('https://example.invalid', 'fake-test-key', {
+    auth: { autoRefreshToken: false, persistSession: false },
     global: { fetch: async (input, init) => {
       const body = init && 'body' in init ? init.body : undefined
       requests.push({ table: String(input).split('/').pop()?.split('?')[0] ?? '', body: JSON.parse(String(body)) })
@@ -31,6 +32,7 @@ Deno.test('keeps exact legacy statuses, reason strings and event deduplication',
 
 Deno.test('event write errors throw so signed deliveries can retry', async () => {
   const client = createClient('https://example.invalid', 'fake-test-key', {
+    auth: { autoRefreshToken: false, persistSession: false },
     global: { fetch: async () => new Response(JSON.stringify({ code: '42501', message: 'Denied' }), { status: 403, headers: { 'Content-Type': 'application/json' } }) },
   })
   let threw = false
