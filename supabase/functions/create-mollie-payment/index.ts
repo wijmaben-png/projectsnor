@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
-import { priceItems, itemSubtotal, ORDERS_OPEN } from "../_shared/merch-catalog.ts";
+import { priceItems, itemSubtotal, orderPricing, ORDERS_OPEN } from "../_shared/merch-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,6 @@ const PRICES: Record<string, number> = {
   longsleeve: 44.99,
   cap: 34.99,
 };
-const DISCOUNT_AMOUNT = 3.0;
 
 const PRODUCT_LABELS: Record<string, string> = {
   shirt: "t-shirt",
@@ -96,9 +95,6 @@ Deno.serve(async (req) => {
     }
 
     const basePrice = itemSubtotal(items);
-    const productPrice = discountValid
-      ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
-      : basePrice;
 
     // Fetch live shipping cost from Sendcloud when shipping
     let shippingCost = 0;
@@ -141,7 +137,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const amount = Math.round((productPrice + shippingCost) * 100) / 100;
+    const amount = orderPricing(basePrice, discountValid, shippingCost).total;
     const amountStr = amount.toFixed(2);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

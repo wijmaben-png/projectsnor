@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { MERCH_PRODUCTS, COLOR_LABELS, priceItems, itemSubtotal, variantLabel, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
+import { MERCH_PRODUCTS, COLOR_LABELS, priceItems, itemSubtotal, orderPricing, DISCOUNT_PERCENT, variantLabel, type CartItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 const SIZES = ["S", "M", "L", "XL"] as const;
@@ -26,7 +26,6 @@ type Color = string;
 const PRODUCTS = MERCH_PRODUCTS.filter((p) => p.available && p.price !== null);
 type Product = string;
 
-const DISCOUNT_AMOUNT = 3.0;
 
 type Delivery = "pickup" | "shipping";
 
@@ -116,11 +115,10 @@ export const PreorderForm = () => {
 
   const product = PRODUCTS.find((p) => p.id === form.product_type);
   const basePrice = cart.length ? itemSubtotal(priceItems(cart)) : 0;
-  const productPrice = discountStatus === "valid" && form.discount_code.trim()
-    ? Math.max(basePrice - DISCOUNT_AMOUNT, 0)
-    : basePrice;
   const effectiveShipping = form.delivery_method === "shipping" ? (shippingCost ?? 0) : 0;
-  const orderTotal = Math.round((productPrice + effectiveShipping) * 100) / 100;
+  const pricing = orderPricing(basePrice, discountStatus === "valid" && Boolean(form.discount_code.trim()), effectiveShipping);
+  const productPrice = pricing.products;
+  const orderTotal = pricing.total;
   const fmt = (n: number) =>
     n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -403,7 +401,7 @@ export const PreorderForm = () => {
         )}
         {discountStatus === "valid" && form.discount_code.trim() && (
           <p className="text-sm font-medium border border-foreground bg-foreground text-background px-3 py-2">
-            Kortingscode toegepast! Je krijgt €{fmt(DISCOUNT_AMOUNT)} korting.
+            Kortingscode toegepast! Je krijgt {DISCOUNT_PERCENT}% korting op je producten (€{fmt(pricing.discount)}). Verzendkosten vallen buiten de korting.
           </p>
         )}
         {discountStatus === "invalid" && (

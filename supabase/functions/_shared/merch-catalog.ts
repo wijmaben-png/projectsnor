@@ -7,10 +7,10 @@ const LONG_SIZES = ["S", "M", "L", "XL"] as const;
 
 export const MERCH_PRODUCTS: readonly Product[] = [
   { id: "shirt", type: "shirt", label: "Shirt", price: 32.99, available: false, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "snorrig-hart", type: "longsleeve", label: "Snorrig Hart", price: 1, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "snorrig-walking-tee", type: "longsleeve", label: "Snorrig Walking Tee", price: 1, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "pet-og", type: "cap", label: "Pet OG", price: 1, available: true, sizes: ["ONE"], colors: ["none"] },
-  { id: "pet-ps", type: "cap", label: "Pet PS", price: 1, available: true, sizes: ["ONE"], colors: ["bone", "black"] },
+  { id: "snorrig-hart", type: "longsleeve", label: "Snorrig Hart", price: 44.99, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
+  { id: "snorrig-walking-tee", type: "longsleeve", label: "Snorrig Walking Tee", price: 44.99, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
+  { id: "pet-og", type: "cap", label: "Pet OG", price: 34.99, available: true, sizes: ["ONE"], colors: ["none"] },
+  { id: "pet-ps", type: "cap", label: "Pet PS", price: 34.99, available: true, sizes: ["ONE"], colors: ["bone", "black"] },
 ];
 
 export type MerchModel = string;
@@ -34,6 +34,15 @@ export function priceItems(items: CartItem[]): OrderItem[] {
 
 export function itemSubtotal(items: OrderItem[]) {
   return Math.round(items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0) * 100) / 100;
+}
+
+export const DISCOUNT_PERCENT = 10;
+
+export function orderPricing(subtotal: number, discountValid: boolean, shippingCost = 0) {
+  const subtotalCents = Math.round(subtotal * 100);
+  const discountCents = discountValid ? Math.round(subtotalCents * DISCOUNT_PERCENT / 100) : 0;
+  const productCents = subtotalCents - discountCents;
+  return { discount: discountCents / 100, products: productCents / 100, total: (productCents + Math.round(shippingCost * 100)) / 100 };
 }
 
 export function orderItems(order: { order_items?: unknown; product_type?: string; tshirt_size: string; tshirt_color: string }): OrderItem[] {
