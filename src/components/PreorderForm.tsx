@@ -504,6 +504,7 @@ export const PreorderForm = () => {
 
       <p className="text-xs text-muted-foreground text-center">
         Let op: omdat dit een speciale pre-order is, is retourneren niet mogelijk. De foto's geven de artikelen zo goed mogelijk weer, maar kleur en details kunnen iets afwijken.
+        <strong className="block mt-2 font-bold text-foreground">Kies je voor verzending? Dan ontvang je je shirts naar verwachting rond eind december.</strong>
       </p>
     </form>
   );
