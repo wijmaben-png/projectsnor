@@ -1,5 +1,5 @@
 # Taken
-- [ ] Verzendkosten en labels afstemmen op aantallen, gewicht en brievenbus/pakket; controles uitvoeren.
+- [x] Verzendkosten, betaling en labelkeuze gebruiken gedeelde gewichts-/pakketberekening; 26 tests geslaagd en echte winkelmand gecontroleerd: één longsleeve €3,85, vijf €7,41. Geen betaling of betaald label aangemaakt. Verpakking: voorlopig 100 gram en geschatte buitenmaten; website-update nog publiceren.
 - [x] E-mailupdate: bestelbevestiging omgezet, historische e-maillogs behouden, ondertekende e-mailgebeurtenissen toegevoegd en oude e-mailbestanden verwijderd. E-mailtests, controles en weigering van ongetekende gebeurtenissen geslaagd; geen echte mail verstuurd, niet gepubliceerd. Losse Resend-bevestiging en trackingmails blijven ongewijzigd.
 - [x] Adminoverzicht per model/kleur/maat met betaalde stuks, bestellingen en onbetaalde aantallen; tests en ingelogd modelfilter gecontroleerd. Betaalde testbestelling Ben Wijma en artikelen verwijderd; extern Sendcloud-label niet geannuleerd.
 - [x] Startpagina met Project Snor, hoofd, Tickets en Snorre merch; aparte merch- en ticketpagina.
