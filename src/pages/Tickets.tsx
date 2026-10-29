@@ -8,8 +8,8 @@ const Tickets = () => (
   <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-6">
     <nav className="w-full max-w-xl mb-4"><Button asChild variant="ghost" className="rounded-none"><Link to="/"><ArrowLeft /> Project Snor</Link></Button></nav>
     <h1 className="font-title text-5xl md:text-7xl text-center max-w-xl">Project Snor Feest 2.0</h1>
-    <Button asChild size="lg" className="mt-6 rounded-none"><a href="https://project-snor.tickable.nl/project-snor-feest-2-0" target="_blank" rel="noopener noreferrer"><Ticket /> Koop tickets</a></Button>
     <div className="w-64 md:w-80 aspect-square mt-6"><PixelImage src={portrait} alt="Project Snor portret" cols={20} rows={20} animate={false} className="w-full h-full" /></div>
+    <Button asChild size="lg" className="mt-6 rounded-none"><a href="https://project-snor.tickable.nl/project-snor-feest-2-0" target="_blank" rel="noopener noreferrer"><Ticket /> Koop tickets</a></Button>
     <p className="mt-8 font-display text-2xl">12 december 2026</p>
     <div className="mt-5 flex items-center gap-2"><Clock className="size-4" /><p>18:00–23:00</p></div>
     <address className="mt-5 not-italic text-center">
