@@ -257,6 +257,10 @@ export const PreorderForm = () => {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <p className="text-sm text-foreground leading-relaxed">
+        <strong className="font-bold">Meerdere artikelen bestellen?</strong>{" "}
+        Kies per product de gewenste maat, kleur en het aantal en klik op ‘Toevoegen aan winkelmand’. Herhaal dit voor elk volgend product. Daarna betaal je alles in één keer.
+      </p>
       <div className="space-y-2">
         <Label className="text-sm uppercase tracking-wide">Product</Label>
         <RadioGroup
