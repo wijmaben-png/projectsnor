@@ -3,3 +3,4 @@
 - Keep `preorders` as the order header for payment and shipping compatibility; store validated item snapshots in `order_items` so a single payment and parcel can contain multiple models and quantities.
 - Use the dependency-free shared merchandise catalogue for frontend choices and authoritative server pricing; models without confirmed imagery and pricing are not purchasable.
 - Group admin orders by normalized customer email and retain each order's complete items when filtering, so fulfillment never loses companion products.
+- Calculate admin model/color/size summaries in a pure order-summary module, separating paid quantities from unpaid and distinct order counts so procurement totals are unambiguous.

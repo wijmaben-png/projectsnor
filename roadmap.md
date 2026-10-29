@@ -1,4 +1,5 @@
 # Taken
+- [x] Adminoverzicht per model/kleur/maat met betaalde stuks, bestellingen en onbetaalde aantallen; tests en ingelogd modelfilter gecontroleerd. Betaalde testbestelling Ben Wijma en artikelen verwijderd; extern Sendcloud-label niet geannuleerd.
 - [x] Startpagina met Project Snor, hoofd, Tickets en Snorre merch; aparte merch- en ticketpagina.
 - [x] Productmodellen en meerdere artikelen per bestelling opslaan, met behoud van bestaande bestellingen.
 - [x] Winkelmand, betaling, bevestiging en overzicht per klant met model- en kleurfilters en aantallen per maat.
