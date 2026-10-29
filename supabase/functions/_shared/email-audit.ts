@@ -6,6 +6,7 @@ export async function logEmailOutcome(
   recipient: string,
   status: 'sent' | 'suppressed' | 'failed',
   errorMessage?: string,
+  orderId?: string,
 ) {
   const { error } = await client.from('email_send_log').insert({
     template_name: template,
@@ -13,6 +14,7 @@ export async function logEmailOutcome(
     status,
     message_id: null,
     error_message: errorMessage ?? null,
+    metadata: orderId ? { preorder_id: orderId } : null,
   })
   if (error) console.error('Email audit write failed', { code: error.code, message: error.message })
 }

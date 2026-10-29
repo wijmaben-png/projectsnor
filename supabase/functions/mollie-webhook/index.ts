@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       const { data: completedEmail, error: auditError } = await supabase.from("email_send_log")
         .select("id").eq("template_name", "order-confirmation")
         .eq("recipient_email", row.email).in("status", ["sent", "suppressed"])
-        .gte("created_at", row.created_at).limit(1);
+        .contains("metadata", { preorder_id: row.id }).limit(1);
       if (auditError) throw auditError;
       if (wasPaid && completedEmail?.length) return new Response("ok", { status: 200, headers: corsHeaders });
       try {
@@ -107,10 +107,10 @@ Deno.serve(async (req) => {
               city: row.city,
             },
         });
-        await logEmailOutcome(supabase, "order-confirmation", row.email, result.sent ? "sent" : "suppressed");
+        await logEmailOutcome(supabase, "order-confirmation", row.email, result.sent ? "sent" : "suppressed", undefined, row.id);
       } catch (e) {
         const message = e instanceof Error ? e.message : "Confirmation email failed";
-        await logEmailOutcome(supabase, "order-confirmation", row.email, "failed", message);
+        await logEmailOutcome(supabase, "order-confirmation", row.email, "failed", message, row.id);
         // Payment stays paid; Mollie retries the webhook and the same send key.
         return new Response("confirmation email unavailable", { status: 500, headers: corsHeaders });
       }
