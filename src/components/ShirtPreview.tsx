@@ -17,9 +17,9 @@ const SHIRTS = [
   { color: "longsleeve-walking-white", label: "Snorrig Walking Tee - wit", front: longsleeveWhiteFront.url, back: walkingWhiteBack.url, backLabel: "achterkant" },
   { color: "longsleeve-white", label: "Snorrig hart - wit", front: longsleeveWhiteFront.url, back: longsleeveWhiteBack.url, backLabel: "achterkant" },
   { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url, backLabel: "achterkant" },
-  { color: "cap", label: "Pet OG", front: capFront.url, back: capOgBack.url, backLabel: "achterkant" },
   { color: "cap-ps-bone", label: "Pet PS - bone", front: psBoneFront.url, back: psBoneSide.url, backLabel: "zijkant" },
   { color: "cap-ps-black", label: "PET PS - ZWART", front: psBlackFront.url, back: psBlackSide.url, backLabel: "zijkant" },
+  { color: "cap", label: "Pet OG", front: capFront.url, back: capOgBack.url, backLabel: "achterkant" },
 ] as const;
 
 const FLIP_BACK_MS = 2500;
