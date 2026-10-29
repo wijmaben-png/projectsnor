@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { Download, LogOut, RotateCcw, Truck } from "lucide-react";
 import { MERCH_PRODUCTS, COLOR_LABELS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { summarizeOrders } from "@/lib/order-summary";
@@ -200,33 +200,7 @@ const Admin = () => {
   }
   if (!authorized) return null;
 
-  const filterBtn = (label: string, value: Filter) => (
-    <Button
-      key={value}
-      variant="outline"
-      onClick={() => setFilter(value)}
-      className={cn(
-        "border-foreground rounded-none uppercase text-xs tracking-wider",
-        filter === value ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background",
-      )}
-    >
-      {label}
-    </Button>
-  );
-
-  const colorBtn = (label: string, value: ColorFilter) => (
-    <Button
-      key={value}
-      variant="outline"
-      onClick={() => setColorFilter(value)}
-      className={cn(
-        "border-foreground rounded-none uppercase text-xs tracking-wider",
-        colorFilter === value ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background",
-      )}
-    >
-      {label}
-    </Button>
-  );
+  const hasFilters = filter !== "all" || colorFilter !== "all" || productFilter !== "all" || modelFilter !== "all";
 
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
@@ -239,41 +213,54 @@ const Admin = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-2">{customers.length} klanten · {filtered.flatMap(orderItems).reduce((n, i) => n + i.quantity, 0)} artikelen</p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {filterBtn("Alle", "all")}
-            {filterBtn("Ophalen", "pickup")}
-            {filterBtn("Verzenden", "shipping")}
-            <span className="w-px h-8 bg-foreground/30" />
-            {colorBtn("Alle kleuren", "all")}
-            {colorBtn("Zwart", "black")}
-            {colorBtn("Wit", "white")}
-            {colorBtn("Bone", "bone")}
-            <span className="w-px h-8 bg-foreground/30" />
-            {([["Alle producten","all"],["Shirts","shirt"],["Longsleeves","longsleeve"],["Petten","cap"]] as [string, ProductFilter][]).map(([l, v]) => (
-              <Button key={v} variant="outline" onClick={() => setProductFilter(v)}
-                className={cn("border-foreground rounded-none uppercase text-xs tracking-wider",
-                  productFilter === v ? "bg-foreground text-background" : "text-foreground hover:bg-foreground hover:text-background")}>
-                {l}
-              </Button>
-            ))}
-            <Select value={modelFilter} onValueChange={setModelFilter}>
-              <SelectTrigger aria-label="Productmodel" className="w-56 border-foreground rounded-none"><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="all">Alle modellen</SelectItem>{MERCH_PRODUCTS.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
-            </Select>
+          <div className="flex flex-wrap gap-2">
             <Button onClick={handleBulkLabels} variant="outline" disabled={bulkLoading || pendingLabelCount === 0}
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
-              {bulkLoading ? "Bezig..." : `Alle labels verzenden (${pendingLabelCount})`}
+              <Truck className="h-4 w-4" />{bulkLoading ? "Bezig..." : `Verzendlabels (${pendingLabelCount})`}
             </Button>
             <Button onClick={handleExport} variant="outline"
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
-              Download CSV
+              <Download className="h-4 w-4" /> Download CSV
             </Button>
             <Button onClick={handleSignOut} variant="outline"
               className="border-foreground text-foreground hover:bg-foreground hover:text-background uppercase tracking-wider rounded-none">
-              Uitloggen
+              <LogOut className="h-4 w-4" /> Uitloggen
             </Button>
           </div>
         </header>
+
+        <section aria-label="Bestellingen filteren" className="mb-6 border-t border-border pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold">Filters</h2>
+            <Button variant="ghost" size="sm" disabled={!hasFilters} onClick={() => { setFilter("all"); setColorFilter("all"); setProductFilter("all"); setModelFilter("all"); }} className="rounded-none"><RotateCcw className="h-4 w-4" /> Wis filters</Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2"><label htmlFor="filter-delivery" className="text-xs text-muted-foreground uppercase">Bezorging</label>
+              <Select value={filter} onValueChange={(v) => setFilter(v as Filter)}>
+                <SelectTrigger id="filter-delivery" aria-label="Bezorging" className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Alle bezorgopties</SelectItem><SelectItem value="pickup">Ophalen</SelectItem><SelectItem value="shipping">Verzenden</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><label htmlFor="filter-type" className="text-xs text-muted-foreground uppercase">Producttype</label>
+              <Select value={productFilter} onValueChange={(v) => setProductFilter(v as ProductFilter)}>
+                <SelectTrigger id="filter-type" aria-label="Producttype" className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Alle producten</SelectItem><SelectItem value="shirt">Shirts</SelectItem><SelectItem value="longsleeve">Longsleeves</SelectItem><SelectItem value="cap">Petten</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><label htmlFor="filter-model" className="text-xs text-muted-foreground uppercase">Model</label>
+              <Select value={modelFilter} onValueChange={setModelFilter}>
+                <SelectTrigger id="filter-model" aria-label="Productmodel" className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Alle modellen</SelectItem>{MERCH_PRODUCTS.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><label htmlFor="filter-color" className="text-xs text-muted-foreground uppercase">Kleur</label>
+              <Select value={colorFilter} onValueChange={(v) => setColorFilter(v as ColorFilter)}>
+                <SelectTrigger id="filter-color" aria-label="Kleur" className="rounded-none"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Alle kleuren</SelectItem><SelectItem value="black">Zwart</SelectItem><SelectItem value="white">Wit</SelectItem><SelectItem value="bone">Bone</SelectItem></SelectContent>
+              </Select>
+            </div>
+          </div>
+        </section>
 
         <section aria-label="Artikelaantallen" className="border-y border-foreground py-6 mb-6">
           <h2 className="font-display text-2xl font-bold mb-2">Aantallen per product</h2>
