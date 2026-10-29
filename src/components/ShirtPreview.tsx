@@ -9,6 +9,8 @@ import capFront from "@/assets/voorkantpet-2.png.asset.json";
 import capOgBack from "@/assets/acherkantpethoofdbone-2.png.asset.json";
 import psBoneFront from "@/assets/voorkantpetpsbone.png.asset.json";
 import psBoneSide from "@/assets/zijkantpetpsbone.png.asset.json";
+import psBlackFront from "@/assets/voorkantzwartps.png.asset.json";
+import psBlackSide from "@/assets/zijkantpet2ps_zwart.png.asset.json";
 
 const SHIRTS = [
   { color: "longsleeve-walking-black", label: "Snorrig Walking Tee - zwart", front: longsleeveBlackFront.url, back: walkingBlackBack.url, backLabel: "achterkant" },
@@ -17,6 +19,7 @@ const SHIRTS = [
   { color: "longsleeve-black", label: "Snorrig Hart - zwart", front: longsleeveBlackFront.url, back: longsleeveBlackBack.url, backLabel: "achterkant" },
   { color: "cap", label: "Pet OG", front: capFront.url, back: capOgBack.url, backLabel: "achterkant" },
   { color: "cap-ps-bone", label: "Pet PS - bone", front: psBoneFront.url, back: psBoneSide.url, backLabel: "zijkant" },
+  { color: "cap-ps-black", label: "PET PS - ZWART", front: psBlackFront.url, back: psBlackSide.url, backLabel: "zijkant" },
 ] as const;
 
 const FLIP_BACK_MS = 2500;
