@@ -76,7 +76,6 @@ Deno.serve(async (req) => {
         ${deliveryBlock}
 
         <p style="margin:24px 0 0;">Groetjes,<br/>het Project Snor team</p>
-        <p style="font-size:12px; color:#666; margin:32px 0 0;">Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation.</p>
       </div>
     `;
 

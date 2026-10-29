@@ -77,7 +77,6 @@ const OrderConfirmationEmail = ({
 
           <Hr style={hr} />
           <Text style={text}>Groetjes,{'\n'}het {SITE_NAME} team</Text>
-          <Text style={footer}>Bij elke aankoop wordt €1 gedoneerd aan de Movember Foundation.</Text>
         </Container>
       </Body>
     </Html>
@@ -106,4 +105,3 @@ const orderBox = { border: '1px solid #000000', padding: '16px 20px', margin: '2
 const orderTitle = { fontSize: '16px', fontStyle: 'italic' as const, color: '#000000', margin: '0 0 8px' }
 const orderItem = { fontSize: '14px', color: '#000000', margin: '0 0 4px' }
 const hr = { borderColor: '#000000', margin: '24px 0' }
-const footer = { fontSize: '12px', color: '#666666', margin: '32px 0 0' }
