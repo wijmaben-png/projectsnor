@@ -1,10 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { orderItems } from "../_shared/merch-catalog.ts";
+import { shippingQuote } from "../_shared/shipping-quote.ts";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const BodySchema = z.object({
   preorder_id: z.string().uuid(),
@@ -17,8 +15,8 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-    const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY")!;
-    const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY")!;
+    const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY");
+    const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY");
     const SENDCLOUD_SENDER_ADDRESS_ID = Deno.env.get("SENDCLOUD_SENDER_ADDRESS_ID");
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
@@ -84,50 +82,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Step 1: Find the Brievenbuspakje+ 48u shipping option code via POST
-    console.log("Fetching shipping options from Sendcloud v3...");
-    const optionsRes = await fetch(
-      "https://panel.sendcloud.sc/api/v3/fetch-shipping-options",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": auth,
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from_address: { country_code: "NL" },
-          to_address: { country_code: "NL" },
-          parcels: [{ weight: { value: "0.300", unit: "kg" } }],
-        }),
-      }
-    );
-
-    if (!optionsRes.ok) {
-      const errText = await optionsRes.text();
-      console.error("Shipping options error:", optionsRes.status, errText);
-      return new Response(JSON.stringify({ error: "shipping_options_error", status: optionsRes.status, details: errText }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const optionsJson = await optionsRes.json();
-    console.log("Available options:", JSON.stringify(optionsJson).slice(0, 2000));
-
-    const option = optionsJson.data?.find((o: any) =>
-      (o.name || o.product?.name || "").toLowerCase().includes("brievenbuspakje+ 48u")
-    );
-
-    if (!option) {
-      const names = (optionsJson.data || []).map((o: any) => o.name || o.product?.name || "unknown");
-      console.error("Available shipping options:", JSON.stringify(names));
-      return new Response(JSON.stringify({ error: "shipping_option_not_found", available: names }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const shippingCode = option.code;
-    console.log("Using shipping code:", shippingCode);
+    const { data: savedItems, error: itemsError } = await admin.from("order_items").select("*").eq("preorder_id", preorder.id);
+    if (itemsError) throw new Error("Orderartikelen konden niet worden opgehaald.");
+    const items = orderItems({ ...preorder, order_items: savedItems });
+    const quote = await shippingQuote(items, preorder.postal_code);
+    const shippingCode = quote.option.code;
 
     // Step 2: Create shipment with v3 payload (root-level, no wrapping array)
     const shipmentPayload = {
@@ -149,12 +108,12 @@ Deno.serve(async (req) => {
       },
       ship_with: {
         type: "shipping_option_code",
-        properties: { shipping_option_code: shippingCode },
+        properties: { shipping_option_code: shippingCode, ...(quote.option.contract?.id ? { contract_id: quote.option.contract.id } : {}) },
       },
       parcels: [
         {
-          weight: { value: "0.300", unit: "kg" },
-          dimensions: { length: "25", width: "20", height: "3", unit: "cm" },
+          weight: quote.parcel.weight,
+          dimensions: quote.parcel.dimensions,
         },
       ],
     };

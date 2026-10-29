@@ -85,33 +85,42 @@ export const PreorderForm = () => {
   const [discountStatus, setDiscountStatus] = useState<"none" | "checking" | "valid" | "invalid">("none");
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState(false);
+  const [quotedKey, setQuotedKey] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [addQty, setAddQty] = useState(1);
+  const shippingKey = JSON.stringify([cart, form.postal_code.trim().replace(/\s/g, "").toUpperCase()]);
+  const shippingReady = shippingCost !== null && quotedKey === shippingKey && !shippingLoading;
 
 
   // Fetch live shipping cost from Sendcloud when "shipping" is selected
   useEffect(() => {
-    if (form.delivery_method !== "shipping") {
-      setShippingCost(null);
+    setShippingCost(null);
+    setShippingError(false);
+    setQuotedKey("");
+    if (form.delivery_method !== "shipping" || !cart.length) {
+      setShippingLoading(false);
       return;
     }
     let cancelled = false;
     setShippingLoading(true);
-    supabase.functions
-      .invoke("get-shipping-cost", { body: {} })
+    const timer = window.setTimeout(() => { supabase.functions
+      .invoke("get-shipping-cost", { body: { items: cart, postal_code: form.postal_code } })
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error || !data?.shipping_cost) {
-          setShippingCost(4.5);
+        if (error || typeof data?.shipping_cost !== "number" || data.shipping_cost <= 0) {
+          setShippingError(true);
         } else {
-          setShippingCost(Number(data.shipping_cost));
+          setShippingCost(data.shipping_cost);
+          setQuotedKey(shippingKey);
         }
       })
+      .catch(() => { if (!cancelled) setShippingError(true); })
       .finally(() => {
         if (!cancelled) setShippingLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [form.delivery_method]);
+      }); }, 350);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [form.delivery_method, shippingKey]);
 
   const product = PRODUCTS.find((p) => p.id === form.product_type);
   const basePrice = cart.length ? itemSubtotal(priceItems(cart)) : 0;
@@ -147,6 +156,10 @@ export const PreorderForm = () => {
     e.preventDefault();
     if (!cart.length) {
       toast({ title: "Je winkelmand is leeg", description: "Voeg eerst een artikel toe." });
+      return;
+    }
+    if (form.delivery_method === "shipping" && !shippingReady) {
+      toast({ title: "Verzendkosten nog niet beschikbaar", description: "Wacht tot de verzendkosten zijn berekend of kies ophalen." });
       return;
     }
 
@@ -466,8 +479,8 @@ export const PreorderForm = () => {
             <div className="flex justify-between">
               <span>Verzendkosten</span>
               <span>
-                {shippingLoading || shippingCost === null
-                  ? "Berekenen..."
+                {shippingError ? "Niet beschikbaar" : !shippingReady
+                  ? (cart.length ? "Berekenen..." : "—")
                   : `€${fmt(effectiveShipping)}`}
               </span>
             </div>
@@ -482,7 +495,7 @@ export const PreorderForm = () => {
           <div className="flex justify-between font-bold text-base">
             <span>Totaal</span>
             <span>
-              {!cart.length || (form.delivery_method === "shipping" && (shippingLoading || shippingCost === null))
+              {!cart.length || (form.delivery_method === "shipping" && !shippingReady)
                 ? "—"
                 : `€${fmt(orderTotal)}`}
             </span>
@@ -496,8 +509,11 @@ export const PreorderForm = () => {
           Vul alle verplichte velden in om verder te gaan.
         </p>
       )}
+      {form.delivery_method === "shipping" && shippingError && (
+        <p role="alert" className="text-sm text-destructive">Verzendkosten zijn tijdelijk niet beschikbaar. Probeer het later opnieuw of kies ophalen.</p>
+      )}
 
-      <Button type="submit" disabled={submitting}
+      <Button type="submit" disabled={submitting || (form.delivery_method === "shipping" && !shippingReady)}
         className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-none text-base font-bold uppercase tracking-wider">
         {submitting ? "Bezig..." : "Bestel nu & Betaal"}
       </Button>

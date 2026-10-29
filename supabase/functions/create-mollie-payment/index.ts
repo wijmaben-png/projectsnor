@@ -1,11 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
+import { shippingQuote } from "../_shared/shipping-quote.ts";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { priceItems, itemSubtotal, orderPricing, ORDERS_OPEN } from "../_shared/merch-catalog.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const PRICES: Record<string, number> = {
   shirt: 32.99,
@@ -96,44 +93,14 @@ Deno.serve(async (req) => {
 
     const basePrice = itemSubtotal(items);
 
-    // Fetch live shipping cost from Sendcloud when shipping
     let shippingCost = 0;
     if (data.delivery_method === "shipping") {
-      const SENDCLOUD_PUBLIC_KEY = Deno.env.get("SENDCLOUD_PUBLIC_KEY");
-      const SENDCLOUD_SECRET_KEY = Deno.env.get("SENDCLOUD_SECRET_KEY");
-      if (SENDCLOUD_PUBLIC_KEY && SENDCLOUD_SECRET_KEY) {
-        try {
-          const auth = "Basic " + btoa(`${SENDCLOUD_PUBLIC_KEY}:${SENDCLOUD_SECRET_KEY}`);
-          const scRes = await fetch(
-            "https://panel.sendcloud.sc/api/v2/shipping_methods?to_country=NL",
-            { headers: { Authorization: auth, "Content-Type": "application/json" } },
-          );
-          const scData = await scRes.json();
-          if (scRes.ok) {
-            const weight = 0.3;
-            let cheapest: number | null = null;
-            for (const m of (scData.shipping_methods ?? []) as Array<{
-              min_weight?: string; max_weight?: string;
-              countries?: Array<{ iso_2?: string; price?: number }>;
-            }>) {
-              const min = parseFloat(m.min_weight ?? "0");
-              const max = parseFloat(m.max_weight ?? "999");
-              if (weight < min || weight > max) continue;
-              const nl = m.countries?.find((c) => c.iso_2 === "NL");
-              if (!nl || typeof nl.price !== "number" || nl.price <= 0) continue;
-              if (cheapest === null || nl.price < cheapest) cheapest = nl.price;
-            }
-            shippingCost = cheapest !== null ? Math.round(cheapest * 100) / 100 : 4.5;
-          } else {
-            console.error("Sendcloud rate lookup failed:", scData);
-            shippingCost = 4.5;
-          }
-        } catch (e) {
-          console.error("Sendcloud rate lookup error:", e);
-          shippingCost = 4.5;
-        }
-      } else {
-        shippingCost = 4.5;
+      try {
+        shippingCost = (await shippingQuote(items, data.postal_code)).cost;
+      } catch {
+        return new Response(JSON.stringify({ error: "Verzendkosten zijn tijdelijk niet beschikbaar. Probeer het later opnieuw of kies ophalen." }), {
+          status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
