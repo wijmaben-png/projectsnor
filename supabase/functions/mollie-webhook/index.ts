@@ -1,4 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
+import { logEmailOutcome } from "../_shared/email-audit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,14 +79,19 @@ Deno.serve(async (req) => {
       .update({ payment_status: dbStatus })
       .eq("id", row.id);
 
-    // On first paid transition, send confirmation email
-    if (dbStatus === "paid" && !wasPaid) {
+    // A retry after an API failure must still send even though payment is paid.
+    // Managed idempotency prevents duplicate confirmations on webhook races.
+    if (dbStatus === "paid") {
+      const { data: completedEmail, error: auditError } = await supabase.from("email_send_log")
+        .select("id").eq("template_name", "order-confirmation")
+        .eq("recipient_email", row.email).in("status", ["sent", "suppressed"])
+        .contains("metadata", { preorder_id: row.id }).limit(1);
+      if (auditError) throw auditError;
+      if (wasPaid && completedEmail?.length) return new Response("ok", { status: 200, headers: corsHeaders });
       try {
-        const { data: items } = await supabase.from("order_items").select("*").eq("preorder_id", row.id);
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "order-confirmation",
-            recipientEmail: row.email,
+        const { data: items, error: itemsError } = await supabase.from("order_items").select("*").eq("preorder_id", row.id);
+        if (itemsError) throw itemsError;
+        const result = await sendTemplateEmail("order-confirmation", row.email, {
             idempotencyKey: `order-confirm-${row.id}`,
             templateData: {
               first_name: row.first_name,
@@ -99,10 +106,13 @@ Deno.serve(async (req) => {
               postal_code: row.postal_code,
               city: row.city,
             },
-          },
         });
+        await logEmailOutcome(supabase, "order-confirmation", row.email, result.sent ? "sent" : "suppressed", undefined, row.id);
       } catch (e) {
-        console.error("confirmation email failed:", e);
+        const message = e instanceof Error ? e.message : "Confirmation email failed";
+        await logEmailOutcome(supabase, "order-confirmation", row.email, "failed", message, row.id);
+        // Payment stays paid; Mollie retries the webhook and the same send key.
+        return new Response("confirmation email unavailable", { status: 500, headers: corsHeaders });
       }
     }
 
