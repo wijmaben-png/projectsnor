@@ -83,7 +83,10 @@ export const ShirtPreview = () => {
                 draggable={false}
               />
             </div>
-            <p className="mt-2 text-xs uppercase tracking-widest">{s.label}</p>
+            <p className="mt-2 text-xs uppercase tracking-widest">
+              <strong className="font-bold">{s.label.split(" - ")[0]}</strong>
+              {s.label.includes(" - ") && ` - ${s.label.split(" - ")[1]}`}
+            </p>
           </div>
         );
       })}
