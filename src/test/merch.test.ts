@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { MERCH_PRODUCTS, priceItems, itemSubtotal, groupCustomers, matchesItems } from "../../supabase/functions/_shared/merch-catalog";
+import { ORDERS_OPEN, MERCH_PRODUCTS, priceItems, itemSubtotal, groupCustomers, matchesItems } from "../../supabase/functions/_shared/merch-catalog";
 
 describe("merch orders", () => {
+  it("temporarily opens ordering for the customer's payment test", () => {
+    expect(ORDERS_OPEN).toBe(true);
+  });
   it("keeps longsleeve and cap together in one order", () => {
     const items = priceItems([
       { product_model: "snorrig-hart", tshirt_size: "L", tshirt_color: "white", quantity: 1 },

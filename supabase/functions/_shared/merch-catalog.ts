@@ -1,4 +1,4 @@
-export const ORDERS_OPEN = false;
+export const ORDERS_OPEN = true;
 export const COLOR_LABELS: Record<string, string> = { black: "Zwart", white: "Wit", blue: "Blauw", bone: "Bone", none: "" };
 
 type Product = { id: string; type: "shirt" | "longsleeve" | "cap"; label: string; price: number | null; available: boolean; sizes: readonly string[]; colors: readonly string[] };
