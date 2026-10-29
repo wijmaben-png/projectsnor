@@ -9,7 +9,8 @@ Deno.test('keeps exact legacy statuses, reason strings and event deduplication',
   const requests: { table: string; body: Record<string, unknown> }[] = []
   const client = createClient('https://example.invalid', 'fake-test-key', {
     global: { fetch: async (input, init) => {
-      requests.push({ table: String(input).split('/').pop()?.split('?')[0] ?? '', body: JSON.parse(String(init?.body)) })
+      const body = init && 'body' in init ? init.body : undefined
+      requests.push({ table: String(input).split('/').pop()?.split('?')[0] ?? '', body: JSON.parse(String(body)) })
       return new Response('[]', { status: 201, headers: { 'Content-Type': 'application/json' } })
     } },
   })
