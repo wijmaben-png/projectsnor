@@ -3,5 +3,8 @@
 - [x] Productmodellen en meerdere artikelen per bestelling opslaan, met behoud van bestaande bestellingen.
 - [x] Winkelmand, betaling, bevestiging en overzicht per klant met model- en kleurfilters en aantallen per maat.
 - [x] Tests en controle van pagina’s, bestelroute tot betaalpagina en teruglezen in het klantoverzicht; geen echte betaling uitgevoerd.
-- [ ] Ticketverkoop koppelen — wacht op gekozen aanbieder en ticketshoplink.
-- [ ] Pet PS en Snorrig Walking Tee verkoopklaar maken — wacht op foto’s, prijzen en varianten.
+- [x] Ticketverkoop gekoppeld aan de aangeleverde Tickable-link.
+- [x] Pet PS en Snorrig Walking Tee voorzien van foto’s, prijzen en varianten.
+- [x] Pet PS zwart toegevoegd aan productfoto’s, bestelkeuzes en gevalideerde ordergegevens; catalogustests en winkelmandcontrole geslaagd, verkoop blijft gesloten. Werkelijke orderopslag niet uitgevoerd vanwege gesloten verkoop; lokale fotocontrole gebruikte aangeleverde bestanden omdat CDN-weergave lokaal niet beschikbaar is.
+- [x] Beide PS-petten naast elkaar geplaatst met Pet OG daaronder; posities gecontroleerd in het voorbeeld.
+- [x] Zwarte shirts onder elkaar geplaatst met de witte shirts ernaast; uitlijning en behouden petindeling gecontroleerd.
