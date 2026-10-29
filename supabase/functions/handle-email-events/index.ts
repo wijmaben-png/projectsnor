@@ -1,4 +1,8 @@
 import { createEmailWebhookHandler } from 'npm:@lovable.dev/email-js@0.4.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { recordEmailEvent } from '../_shared/email-audit.ts'
+
+const client = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')
 
 const handler = createEmailWebhookHandler({
   apiKey: Deno.env.get('LOVABLE_API_KEY')!,
@@ -6,13 +10,13 @@ const handler = createEmailWebhookHandler({
     // Placeholder handlers — replace each log with the feature's reaction.
     // Throw on failure so the delivery is retried.
     'email.bounced': async (event) => {
-      console.log('Email bounced', { event_id: event.event_id })
+      await recordEmailEvent(client, event, 'bounce')
     },
     'email.complaint': async (event) => {
-      console.log('Email complaint', { event_id: event.event_id })
+      await recordEmailEvent(client, event, 'complaint')
     },
     'email.unsubscribed': async (event) => {
-      console.log('Email unsubscribed', { event_id: event.event_id })
+      await recordEmailEvent(client, event, 'unsubscribe')
     },
   },
 })

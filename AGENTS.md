@@ -4,3 +4,4 @@
 - Use the dependency-free shared merchandise catalogue for frontend choices and authoritative server pricing; models without confirmed imagery and pricing are not purchasable.
 - Group admin orders by normalized customer email and retain each order's complete items when filtering, so fulfillment never loses companion products.
 - Calculate admin model/color/size summaries in a pure order-summary module, separating paid quantities from unpaid and distinct order counts so procurement totals are unambiguous.
+- Send order confirmations through the managed template helper from the verified payment webhook, retaining historical email audit writes and signed outcome-event records; leave standalone third-party confirmation and tracking senders unchanged.
