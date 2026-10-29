@@ -56,8 +56,8 @@ export const ShirtPreview = () => {
           <div
             key={s.color}
             className="flex flex-col items-center"
-            onMouseEnter={() => showBack(s.color)}
-            onMouseLeave={() => showFront(s.color)}
+            onPointerEnter={(e) => e.pointerType === "mouse" && showBack(s.color)}
+            onPointerLeave={(e) => e.pointerType === "mouse" && showFront(s.color)}
             onClick={() => (isBack ? showFront(s.color) : showBack(s.color))}
           >
             <div className="relative w-full aspect-square border border-foreground bg-background overflow-hidden cursor-pointer select-none">
