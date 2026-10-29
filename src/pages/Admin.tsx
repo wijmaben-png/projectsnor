@@ -39,7 +39,7 @@ type Preorder = {
 };
 
 type Filter = "all" | "pickup" | "shipping";
-type ColorFilter = "all" | "black" | "white" | "blue" | "bone";
+type ColorFilter = "all" | "black" | "white" | "bone";
 type ProductFilter = "all" | "shirt" | "longsleeve" | "cap";
 const productLabel = (t: string) => t === "cap" ? "Pet" : t === "longsleeve" ? "Longsleeve" : "Shirt";
 
