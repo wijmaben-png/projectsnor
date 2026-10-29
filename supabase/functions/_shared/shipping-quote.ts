@@ -23,6 +23,12 @@ export async function shippingQuote(items: ShippingItem[], postalCode?: string |
     throw new Error("Verzendkosten zijn tijdelijk niet beschikbaar. Probeer het later opnieuw of kies ophalen.");
   }
   const data = await res.json();
-  const selected = chooseShippingOption(Array.isArray(data.data) ? data.data : [], parcel.kind);
+  const options = Array.isArray(data.data) ? data.data : [];
+  let selected;
+  try { selected = chooseShippingOption(options, parcel.kind); }
+  catch (error) {
+    console.error("No matching shipping quote:", JSON.stringify({ kind: parcel.kind, options: options.map((o: { code?: string; name?: string; functionalities?: unknown; quotes?: unknown; quote_error?: unknown }) => ({ code: o.code, name: o.name, functionalities: o.functionalities, quotes: o.quotes, quote_error: o.quote_error })) }));
+    throw error;
+  }
   return { ...selected, parcel };
 }
