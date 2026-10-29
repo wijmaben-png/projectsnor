@@ -1,4 +1,5 @@
 # Taken
+- [ ] Duidelijk adminoverzicht per model, kleur en maat controleren; betaalde testbestelling Ben Wijma verwijderen.
 - [x] Startpagina met Project Snor, hoofd, Tickets en Snorre merch; aparte merch- en ticketpagina.
 - [x] Productmodellen en meerdere artikelen per bestelling opslaan, met behoud van bestaande bestellingen.
 - [x] Winkelmand, betaling, bevestiging en overzicht per klant met model- en kleurfilters en aantallen per maat.

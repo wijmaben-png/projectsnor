@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MERCH_PRODUCTS, COLOR_LABELS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { summarizeOrders } from "@/lib/order-summary";
 
 type Preorder = {
   id: string;
@@ -163,11 +164,7 @@ const Admin = () => {
     .filter((p) => filter === "all" ? true : p.delivery_method === filter)
     .filter((p) => matchesItems(orderItems(p), productFilter, modelFilter, colorFilter));
   const customers = groupCustomers(filtered);
-  const itemCounts = filtered.flatMap((p) => orderItems(p)).filter((item) => matchesItems([item], productFilter, modelFilter, colorFilter)).reduce<Record<string, number>>((totals, item) => {
-    const key = [item.product_name, COLOR_LABELS[item.tshirt_color], item.tshirt_size === "ONE" ? "" : item.tshirt_size].filter(Boolean).join(" · ");
-    totals[key] = (totals[key] ?? 0) + item.quantity;
-    return totals;
-  }, {});
+  const productSummary = summarizeOrders(filtered, productFilter, modelFilter, colorFilter);
 
   const handleExport = () => {
     const headers = ["Bestelnummer","Datum","Voornaam","Achternaam","E-mail","Telefoon","Product","Model","Aantal","Artikelprijs","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Besteltotaal","Korting","Tracking"];
@@ -278,9 +275,25 @@ const Admin = () => {
           </div>
         </header>
 
-        <section aria-label="Artikelaantallen" className="border-y border-foreground py-4 mb-6 flex flex-wrap gap-x-8 gap-y-2">
-          {Object.entries(itemCounts).map(([label, count]) => <p key={label} className="text-sm"><strong>{count}×</strong> {label}</p>)}
-          {!Object.keys(itemCounts).length && <p className="text-sm text-muted-foreground">Geen artikelen voor deze selectie</p>}
+        <section aria-label="Artikelaantallen" className="border-y border-foreground py-6 mb-6">
+          <h2 className="font-display text-2xl font-bold mb-2">Aantallen per product</h2>
+          <p className="text-sm text-muted-foreground mb-4">Betaald: <strong className="text-foreground">{productSummary.reduce((n, r) => n + r.paidUnits, 0)} stuks</strong> · Nog niet betaald: {productSummary.reduce((n, r) => n + r.unpaidUnits, 0)} stuks</p>
+          <Table>
+            <TableHeader><TableRow className="border-foreground">
+              {["Model", "Kleur", "Betaalde bestellingen", "Betaalde stuks", "S", "M", "L", "XL", "One size", "Nog niet betaald"].map((label) => <TableHead key={label} className="text-foreground whitespace-nowrap">{label}</TableHead>)}
+            </TableRow></TableHeader>
+            <TableBody>
+              {productSummary.map((row) => <TableRow key={`${row.model}:${row.color}`} className="border-border">
+                <TableCell className="font-bold whitespace-nowrap">{row.name}</TableCell>
+                <TableCell>{COLOR_LABELS[row.color] || "—"}</TableCell>
+                <TableCell className="tabular-nums">{row.paidOrders}</TableCell>
+                <TableCell className="font-bold text-lg tabular-nums">{row.paidUnits}</TableCell>
+                {["S", "M", "L", "XL", "ONE"].map((size) => <TableCell key={size} className="tabular-nums">{row.sizes[size] ?? 0}</TableCell>)}
+                <TableCell className="text-muted-foreground tabular-nums">{row.unpaidUnits}</TableCell>
+              </TableRow>)}
+              {!productSummary.length && <TableRow><TableCell colSpan={10} className="text-muted-foreground">Geen artikelen voor deze selectie</TableCell></TableRow>}
+            </TableBody>
+          </Table>
         </section>
 
         <div className="border border-foreground overflow-x-auto">
