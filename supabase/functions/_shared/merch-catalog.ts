@@ -7,10 +7,10 @@ const LONG_SIZES = ["S", "M", "L", "XL"] as const;
 
 export const MERCH_PRODUCTS: readonly Product[] = [
   { id: "shirt", type: "shirt", label: "Shirt", price: 32.99, available: false, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "snorrig-hart", type: "longsleeve", label: "Snorrig Hart", price: 44.99, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "snorrig-walking-tee", type: "longsleeve", label: "Snorrig Walking Tee", price: 44.99, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
-  { id: "pet-og", type: "cap", label: "Pet OG", price: 34.99, available: true, sizes: ["ONE"], colors: ["none"] },
-  { id: "pet-ps", type: "cap", label: "Pet PS", price: 34.99, available: true, sizes: ["ONE"], colors: ["bone", "black"] },
+  { id: "snorrig-hart", type: "longsleeve", label: "Snorrig Hart", price: 1, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
+  { id: "snorrig-walking-tee", type: "longsleeve", label: "Snorrig Walking Tee", price: 1, available: true, sizes: LONG_SIZES, colors: ["black", "white"] },
+  { id: "pet-og", type: "cap", label: "Pet OG", price: 1, available: true, sizes: ["ONE"], colors: ["none"] },
+  { id: "pet-ps", type: "cap", label: "Pet PS", price: 1, available: true, sizes: ["ONE"], colors: ["bone", "black"] },
 ];
 
 export type MerchModel = string;
