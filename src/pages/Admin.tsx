@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, LogOut, RotateCcw, Truck } from "lucide-react";
 import { MERCH_PRODUCTS, COLOR_LABELS, orderItems, groupCustomers, matchesItems, type OrderItem } from "../../supabase/functions/_shared/merch-catalog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { summarizeOrders } from "@/lib/order-summary";
+import { summarizeOrders, summarizeRevenue } from "@/lib/order-summary";
 
 type Preorder = {
   id: string;
@@ -165,6 +165,9 @@ const Admin = () => {
     .filter((p) => matchesItems(orderItems(p), productFilter, modelFilter, colorFilter));
   const customers = groupCustomers(filtered);
   const productSummary = summarizeOrders(filtered, productFilter, modelFilter, colorFilter);
+  const revenue = summarizeRevenue(preorders);
+  const selectedRevenue = summarizeRevenue(filtered);
+  const formatEuros = (amount: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(amount);
 
   const handleExport = () => {
     const headers = ["Bestelnummer","Datum","Voornaam","Achternaam","E-mail","Telefoon","Product","Model","Aantal","Artikelprijs","Maat","Kleur","Bezorging","Adres","Postcode","Plaats","Status","Besteltotaal","Korting","Tracking"];
@@ -228,6 +231,21 @@ const Admin = () => {
             </Button>
           </div>
         </header>
+
+        <section aria-label="Omzet" className="mb-6 border-y border-foreground py-6">
+          <div className="flex flex-wrap items-start gap-x-16 gap-y-5">
+            <div>
+              <h2 className="text-sm font-bold">Totale omzet</h2>
+              <p className="font-display text-3xl font-bold tabular-nums mt-2">{formatEuros(revenue.total)}</p>
+              <p className="text-sm text-muted-foreground mt-2">{revenue.paidOrders} betaalde bestellingen · inclusief verzendkosten</p>
+            </div>
+            {hasFilters && <div>
+              <h2 className="text-sm font-bold">Omzet binnen selectie</h2>
+              <p className="font-display text-2xl font-bold tabular-nums mt-2">{formatEuros(selectedRevenue.total)}</p>
+              <p className="text-sm text-muted-foreground mt-2">{selectedRevenue.paidOrders} betaalde bestellingen · volledige besteltotalen</p>
+            </div>}
+          </div>
+        </section>
 
         <section aria-label="Bestellingen filteren" className="mb-6 border-t border-border pt-5">
           <div className="flex items-center justify-between mb-3">
