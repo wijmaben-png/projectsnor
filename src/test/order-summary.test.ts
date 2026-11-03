@@ -10,16 +10,19 @@ const order = { id: "one", payment_status: "paid", tshirt_size: "M", tshirt_colo
 describe("revenue", () => {
   it("sums actual paid totals including shipping, not current catalogue prices", () => {
     expect(summarizeRevenue([
-      { payment_status: "paid", amount_paid: 48.84 },
-      { payment_status: "paid", amount_paid: "69.98" },
-    ])).toEqual({ total: 118.82, paidOrders: 2 });
+      { payment_status: "paid", amount_paid: 48.84, shipping_cost: 3.85 },
+      { payment_status: "paid", amount_paid: "69.98", shipping_cost: 0 },
+    ])).toEqual({ total: 118.82, products: 114.97, shipping: 3.85, paidOrders: 2 });
+  });
+  it("separates actual shipping from discounted product revenue in cents", () => {
+    expect(summarizeRevenue([{ payment_status: "paid", amount_paid: 44.34, shipping_cost: "3.85" }])).toEqual({ total: 44.34, products: 40.49, shipping: 3.85, paidOrders: 1 });
   });
   it("excludes all non-paid orders", () => {
-    expect(summarizeRevenue(["open", "pending", "expired", "failed", "canceled", "refunded"].map(payment_status => ({ payment_status, amount_paid: 44.99 })))).toEqual({ total: 0, paidOrders: 0 });
+    expect(summarizeRevenue(["open", "pending", "expired", "failed", "canceled", "refunded"].map(payment_status => ({ payment_status, amount_paid: 44.99, shipping_cost: 3.85 })))).toEqual({ total: 0, products: 0, shipping: 0, paidOrders: 0 });
   });
   it("handles an empty list and absent amounts without invalid totals", () => {
-    expect(summarizeRevenue([])).toEqual({ total: 0, paidOrders: 0 });
-    expect(summarizeRevenue([{ payment_status: "paid", amount_paid: null }])).toEqual({ total: 0, paidOrders: 1 });
+    expect(summarizeRevenue([])).toEqual({ total: 0, products: 0, shipping: 0, paidOrders: 0 });
+    expect(summarizeRevenue([{ payment_status: "paid", amount_paid: null }])).toEqual({ total: 0, products: 0, shipping: 0, paidOrders: 1 });
   });
 });
 describe("product quantities", () => {

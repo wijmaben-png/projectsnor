@@ -33,6 +33,7 @@ type Preorder = {
   city: string | null;
   payment_status: string;
   amount_paid: number | null;
+  shipping_cost: number | null;
   discount_code_used: boolean;
   tracking_number: string | null;
   sendcloud_parcel_id: string | null;
@@ -235,14 +236,25 @@ const Admin = () => {
         <section aria-label="Omzet" className="mb-6 border-y border-foreground py-6">
           <div className="flex flex-wrap items-start gap-x-16 gap-y-5">
             <div>
-              <h2 className="text-sm font-bold">Totale omzet</h2>
+              <h2 className="text-sm font-bold">Productomzet</h2>
+              <p className="font-display text-3xl font-bold tabular-nums mt-2">{formatEuros(revenue.products)}</p>
+              <p className="text-sm text-muted-foreground mt-2">Na korting · zonder verzendkosten</p>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold">Ontvangen verzendkosten</h2>
+              <p className="font-display text-3xl font-bold tabular-nums mt-2">{formatEuros(revenue.shipping)}</p>
+              <p className="text-sm text-muted-foreground mt-2">Door klanten betaald</p>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold">Totaal ontvangen</h2>
               <p className="font-display text-3xl font-bold tabular-nums mt-2">{formatEuros(revenue.total)}</p>
-              <p className="text-sm text-muted-foreground mt-2">{revenue.paidOrders} betaalde bestellingen · inclusief verzendkosten</p>
+              <p className="text-sm text-muted-foreground mt-2">{revenue.paidOrders} betaalde bestellingen</p>
             </div>
             {hasFilters && <div>
               <h2 className="text-sm font-bold">Omzet binnen selectie</h2>
               <p className="font-display text-2xl font-bold tabular-nums mt-2">{formatEuros(selectedRevenue.total)}</p>
               <p className="text-sm text-muted-foreground mt-2">{selectedRevenue.paidOrders} betaalde bestellingen · volledige besteltotalen</p>
+              <p className="text-sm text-muted-foreground mt-1">Producten {formatEuros(selectedRevenue.products)} · verzending {formatEuros(selectedRevenue.shipping)}</p>
             </div>}
           </div>
         </section>
