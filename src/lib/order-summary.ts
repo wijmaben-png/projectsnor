@@ -3,6 +3,23 @@ import { MERCH_PRODUCTS, matchesItems, orderItems, type OrderItem } from "../../
 type SummaryOrder = { id: string; payment_status: string; tshirt_size: string; tshirt_color: string; product_type?: string; order_items?: OrderItem[] };
 export type ProductSummary = { model: string; name: string; color: string; sizes: Record<string, number>; paidUnits: number; unpaidUnits: number; paidOrders: number };
 
+export function summarizeRevenue(orders: { payment_status: string; amount_paid: number | string | null; shipping_cost?: number | string | null }[]) {
+  let totalCents = 0;
+  let shippingCents = 0;
+  let paidOrders = 0;
+  for (const order of orders) {
+    if (order.payment_status !== "paid") continue;
+    paidOrders++;
+    const amount = Number(order.amount_paid);
+    if (Number.isFinite(amount)) {
+      totalCents += Math.round(amount * 100);
+      const shipping = Number(order.shipping_cost ?? 0);
+      if (Number.isFinite(shipping)) shippingCents += Math.round(shipping * 100);
+    }
+  }
+  return { total: totalCents / 100, products: (totalCents - shippingCents) / 100, shipping: shippingCents / 100, paidOrders };
+}
+
 export function summarizeOrders(orders: SummaryOrder[], type = "all", model = "all", color = "all"): ProductSummary[] {
   const rows = new Map<string, ProductSummary & { orderIds: Set<string> }>();
   for (const product of MERCH_PRODUCTS.filter((p) => p.available)) {
