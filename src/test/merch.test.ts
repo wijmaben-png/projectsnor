@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { ORDERS_OPEN, MERCH_PRODUCTS, priceItems, itemSubtotal, orderPricing, groupCustomers, matchesItems } from "../../supabase/functions/_shared/merch-catalog";
 
 describe("merch orders", () => {
-  it("temporarily opens ordering for the customer's payment test", () => {
-    expect(ORDERS_OPEN).toBe(true);
+  it("keeps ordering closed after the drop 2 pre-order ends", () => {
+    expect(ORDERS_OPEN).toBe(false);
   });
   it("keeps longsleeve and cap together in one order", () => {
     const items = priceItems([

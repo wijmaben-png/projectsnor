@@ -1,4 +1,5 @@
 # Taken
+- [x] Pre-order gesloten op de merchpagina met melding en ticketlink; bestelformulier weg, betaling backend geblokkeerd (HTTP 403), ticketsknop blijft werken.
 - [x] Adminomzet met productomzet, ontvangen verzendkosten en totaal apart; 7 tests geslaagd en ingelogde totalen en filters gecontroleerd tegen 39 betaalde bestellingen.
 - [x] Verzendkosten, betaling en labelkeuze gebruiken gedeelde gewichts-/pakketberekening; 26 tests geslaagd en echte winkelmand gecontroleerd: één longsleeve €3,85, vijf €7,41. Geen betaling of betaald label aangemaakt. Verpakking: voorlopig 100 gram en geschatte buitenmaten; website-update nog publiceren.
 - [x] E-mailupdate: bestelbevestiging omgezet, historische e-maillogs behouden, ondertekende e-mailgebeurtenissen toegevoegd en oude e-mailbestanden verwijderd. E-mailtests, controles en weigering van ongetekende gebeurtenissen geslaagd; geen echte mail verstuurd, niet gepubliceerd. Losse Resend-bevestiging en trackingmails blijven ongewijzigd.
